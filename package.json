@@ -3,22 +3,30 @@
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "eject": "expo eject"
+    "start": "expo start -c",
+    "refresh-node-modules": "rm -rf node_modules && rm yarn.lock && yarn install",
+    "test": "jest",
+    "build-android-apk": "expo build:android -t apk",
+    "build-android-bundle": "expo build:android -t app-bundle"
+  },
+  "jest": {
+    "preset": "jest-expo"
   },
   "dependencies": {
+    "@expo/vector-icons": "^12.0.5",
     "expo": "~43.0.2",
     "expo-status-bar": "~1.1.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-native": "0.64.3",
+    "react-native-safe-area-context": "3.3.2",
     "react-native-web": "0.17.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9"
+    "@testing-library/react-native": "^9.0.0",
+    "@babel/core": "^7.12.9",
+    "@testing-library/jest-native": "^4.0.4",
+    "jest-expo": "~43.0.0"
   },
   "private": true
 }
