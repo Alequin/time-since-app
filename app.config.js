@@ -19,7 +19,7 @@ export default {
     versionCode: version,
     permissions: [], // Use minimum permissions (https://docs.expo.dev/versions/latest/config/app/#permissions)
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#000000",
     },
   },
