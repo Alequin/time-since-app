@@ -1,91 +1,49 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Button } from "./button";
-import { getTimeSince } from "./get-time-since";
-import { Icon } from "./icons";
+import React, { useCallback, useMemo, useState } from "react";
+import { View } from "react-native";
+import { HomeView } from "./views/home-view";
+import { NewTimeItemView } from "./views/new-time-item-view";
 
 export const MainView = () => {
-  const currentTime = useCurrentTime();
+  const { activeView, toHomeView, toNewTimeItemView } = useViewNavigation();
+  const { timeItems, addTimeItem } = useTimeItems();
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "flex-end", padding: 20 }}>
-      <View style={{ flex: 1, width: "100%" }}>
-        <TimeItem currentTime={currentTime} />
-      </View>
-      <AddButton />
+    <View style={{ flex: 1, padding: 20 }}>
+      {activeView === VIEWS.HOME_VIEW && (
+        <HomeView toNewTimeItemView={toNewTimeItemView} timeItems={timeItems} />
+      )}
+      {activeView === VIEWS.NEW_TIME_ITEM_VIEW && (
+        <NewTimeItemView toHomeView={toHomeView} addTimeItem={addTimeItem} />
+      )}
     </View>
   );
 };
 
-const TimeItem = ({ currentTime }) => {
-  const { days, hours, minutes, seconds } = getTimeSince(
-    new Date("2021-12-12T19:00:00"),
-    currentTime
-  );
-
-  return (
-    <View
-      style={[
-        {
-          backgroundColor: "#D0F4DE",
-          width: "100%",
-          height: 100,
-          borderRadius: 20,
-          justifyContent: "center",
-          alignItems: "center",
-        },
-        styles.shadow,
-      ]}
-    >
-      <Text style={{ fontSize: 18 }}>{`Time since visiting the store`}</Text>
-      <Text style={{ fontSize: 17 }}>{`Total Days: ${days}`}</Text>
-      <Text style={{ fontSize: 17 }}>{`${asTwoDigitNumber(hours)}:${asTwoDigitNumber(
-        minutes
-      )}:${asTwoDigitNumber(seconds)}`}</Text>
-    </View>
-  );
+const VIEWS = {
+  HOME_VIEW: "HOME_VIEW",
+  NEW_TIME_ITEM_VIEW: "NEW_TIME_ITEM_VIEW",
 };
 
-const asTwoDigitNumber = (number) => {
-  return number.toString().length === 1 ? `0${number}` : number;
+const useViewNavigation = () => {
+  const [activeView, setActiveView] = useState(VIEWS.HOME_VIEW);
+
+  return {
+    activeView,
+    toHomeView: useCallback(() => setActiveView(VIEWS.HOME_VIEW), []),
+    toNewTimeItemView: useCallback(() => setActiveView(VIEWS.NEW_TIME_ITEM_VIEW), []),
+  };
 };
 
-const AddButton = () => {
-  return (
-    <Button
-      onPress={() => {}}
-      style={[
-        {
-          backgroundColor: "orange",
-          justifyContent: "center",
-          alignItems: "center",
-          width: 75,
-          height: 75,
-          borderRadius: 1000,
-        },
-        styles.shadow,
-      ]}
-    >
-      <Icon name="plus" size={40} />
-    </Button>
-  );
+const useTimeItems = () => {
+  const [timeItems, setTimeItems] = useState([
+    { title: `Time since visiting the store`, startTime: new Date("2021-12-12T19:00:00") },
+  ]);
+
+  return {
+    timeItems,
+    addTimeItem: useCallback(
+      (newItem) => setTimeItems((previousItems) => [...previousItems, newItem]),
+      []
+    ),
+  };
 };
-
-const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return currentTime;
-};
-
-const styles = StyleSheet.create({
-  shadow: {
-    elevation: 10,
-  },
-});
