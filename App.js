@@ -1,13 +1,20 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MainView } from "./src/main-view";
 
+// colour pallet https://coolors.co/909cc2-084887-ffa500-f7f5fb-d0f4de
+
 export const App = () => {
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#909CC2",
+      }}
+    >
+      <StatusBar backgroundColor="#909CC2" />
       <MainView />
     </View>
   );
@@ -29,10 +36,3 @@ export default () => {
     </SafeAreaProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-});
