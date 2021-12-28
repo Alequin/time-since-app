@@ -42,7 +42,7 @@ const TimeItem = ({ item, currentTime, onPressUpdate, onPressDelete }) => {
     <View
       style={[
         {
-          backgroundColor: "#D0F4DE",
+          backgroundColor: "#909CC2",
           width: "100%",
           height: 100,
           borderRadius: 20,
