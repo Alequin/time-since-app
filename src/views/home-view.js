@@ -4,7 +4,12 @@ import { Button } from "../button";
 import { getTimeSince } from "../get-time-since";
 import { Icon } from "../icons";
 
-export const HomeView = ({ toNewTimeItemView, timeItems, removeTimeItem }) => {
+export const HomeView = ({
+  timeItems,
+  onAddNewItem,
+  onUpdateItem,
+  onRemoveItem,
+}) => {
   const currentTime = useCurrentTime();
 
   return (
@@ -15,18 +20,19 @@ export const HomeView = ({ toNewTimeItemView, timeItems, removeTimeItem }) => {
             key={item.id}
             item={item}
             currentTime={currentTime}
-            onPressDelete={() => removeTimeItem(item)}
+            onPressUpdate={onUpdateItem}
+            onPressDelete={onRemoveItem}
           />
         ))}
       </View>
       <View style={{ width: "100%", alignItems: "center" }}>
-        <AddButton onPress={toNewTimeItemView} />
+        <AddButton onPress={onAddNewItem} />
       </View>
     </View>
   );
 };
 
-const TimeItem = ({ item, currentTime, onPressDelete }) => {
+const TimeItem = ({ item, currentTime, onPressUpdate, onPressDelete }) => {
   const { days, hours, minutes, seconds } = getTimeSince(
     item.startTime,
     currentTime
@@ -54,12 +60,13 @@ const TimeItem = ({ item, currentTime, onPressDelete }) => {
       <View style={{ flexDirection: "row" }}>
         <Button
           style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
+          onPress={() => onPressUpdate(item)}
         >
           <Icon name="edit" size={25} />
         </Button>
         <Button
           style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
-          onPress={onPressDelete}
+          onPress={() => onPressDelete(item)}
         >
           <Icon name="trashBin" size={25} />
         </Button>

@@ -2,31 +2,56 @@ import uniqueId from "lodash/uniqueId";
 import React, { useCallback, useState } from "react";
 import { View } from "react-native";
 import { HomeView } from "./views/home-view";
-import { NewTimeItemView } from "./views/new-time-item-view";
+import { TimeItemFormView } from "./views/time-item-form-view";
+
+const VIEWS = {
+  HOME_VIEW: "HOME_VIEW",
+  NEW_TIME_ITEM_VIEW: "NEW_TIME_ITEM_VIEW",
+  UPDATE_TIME_ITEM_VIEW: "EDIT_TIME_ITEM_VIEW",
+};
 
 export const MainView = () => {
-  const { activeView, toHomeView, toNewTimeItemView } = useViewNavigation();
-  const { timeItems, addTimeItem, removeTimeItem } = useTimeItems();
+  const { activeView, toHomeView, toNewTimeItemView, toUpdateTimeItemView } =
+    useViewNavigation();
+  const { timeItems, addTimeItem, removeTimeItem, updateTimeItem } =
+    useTimeItems();
+
+  const [itemToUpdate, setItemToUpdate] = useState(null);
 
   return (
     <View style={{ flex: 1, padding: 20 }}>
       {activeView === VIEWS.HOME_VIEW && (
         <HomeView
-          toNewTimeItemView={toNewTimeItemView}
           timeItems={timeItems}
-          removeTimeItem={removeTimeItem}
+          onAddNewItem={toNewTimeItemView}
+          onUpdateItem={(itemToUpdate) => {
+            setItemToUpdate(itemToUpdate);
+            toUpdateTimeItemView();
+          }}
+          onRemoveItem={removeTimeItem}
         />
       )}
       {activeView === VIEWS.NEW_TIME_ITEM_VIEW && (
-        <NewTimeItemView toHomeView={toHomeView} addTimeItem={addTimeItem} />
+        <TimeItemFormView
+          onSubmit={(item) => {
+            addTimeItem(item);
+            toHomeView();
+          }}
+          onPressBack={toHomeView}
+        />
+      )}
+      {activeView === VIEWS.UPDATE_TIME_ITEM_VIEW && (
+        <TimeItemFormView
+          initialTimeItem={itemToUpdate}
+          onSubmit={(item) => {
+            updateTimeItem(item);
+            toHomeView();
+          }}
+          onPressBack={toHomeView}
+        />
       )}
     </View>
   );
-};
-
-const VIEWS = {
-  HOME_VIEW: "HOME_VIEW",
-  NEW_TIME_ITEM_VIEW: "NEW_TIME_ITEM_VIEW",
 };
 
 const useViewNavigation = () => {
@@ -37,6 +62,10 @@ const useViewNavigation = () => {
     toHomeView: useCallback(() => setActiveView(VIEWS.HOME_VIEW), []),
     toNewTimeItemView: useCallback(
       () => setActiveView(VIEWS.NEW_TIME_ITEM_VIEW),
+      []
+    ),
+    toUpdateTimeItemView: useCallback(
+      () => setActiveView(VIEWS.UPDATE_TIME_ITEM_VIEW),
       []
     ),
   };
@@ -66,6 +95,18 @@ const useTimeItems = () => {
         setTimeItems((previousItems) =>
           previousItems.filter(({ id }) => id !== itemToRemove.id)
         ),
+      []
+    ),
+    updateTimeItem: useCallback(
+      (editedItem) =>
+        setTimeItems((previousItems) => {
+          const newItems = [...previousItems];
+          const itemIndex = newItems.findIndex(
+            ({ id }) => id !== editedItem.id
+          );
+          newItems[itemIndex] = editedItem;
+          return newItems;
+        }),
       []
     ),
   };

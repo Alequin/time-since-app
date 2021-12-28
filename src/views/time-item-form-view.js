@@ -3,23 +3,31 @@ import React, { useEffect, useState } from "react";
 import { BackHandler, Text, TextInput, View } from "react-native";
 import { Button } from "../button";
 
-export const NewTimeItemView = ({ toHomeView, addTimeItem }) => {
+const newDefaultTimeItem = () => ({
+  title: "",
+  startTime: new Date(),
+});
+
+export const TimeItemFormView = ({
+  initialTimeItem = newDefaultTimeItem(),
+  onPressBack,
+  onSubmit,
+}) => {
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
-        toHomeView();
+        onPressBack();
         return true;
       }
     );
     return () => backHandler.remove();
   }, []);
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTimeItem.title);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [startTime, setStartTime] = useState(new Date());
-
+  const [startTime, setStartTime] = useState(initialTimeItem.startTime);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   return (
@@ -41,13 +49,15 @@ export const NewTimeItemView = ({ toHomeView, addTimeItem }) => {
         <DatePicker
           value={startTime}
           onChange={({ nativeEvent }) => {
-            const selectedTime = nativeEvent.timestamp;
-            setStartTime((previousStartTime) => {
-              const newStartTime = new Date(previousStartTime);
-              newStartTime.setFullYear(selectedTime.getFullYear());
-              newStartTime.setMonth(selectedTime.getMonth());
-              newStartTime.setDate(selectedTime.getDate());
-              return newStartTime;
+            const selectedDate = nativeEvent.timestamp;
+            setStartTime((previousStartDate) => {
+              if (!selectedDate) return previousStartDate;
+
+              const newStartDate = new Date(previousStartDate);
+              newStartDate.setFullYear(selectedDate.getFullYear());
+              newStartDate.setMonth(selectedDate.getMonth());
+              newStartDate.setDate(selectedDate.getDate());
+              return newStartDate;
             });
             setShowDatePicker(false);
           }}
@@ -66,6 +76,8 @@ export const NewTimeItemView = ({ toHomeView, addTimeItem }) => {
           onChange={({ nativeEvent }) => {
             const selectedTime = nativeEvent.timestamp;
             setStartTime((previousStartTime) => {
+              if (!selectedTime) return previousStartTime;
+
               const newStartTime = new Date(previousStartTime);
               newStartTime.setHours(selectedTime.getHours());
               newStartTime.setMinutes(selectedTime.getMinutes());
@@ -79,8 +91,7 @@ export const NewTimeItemView = ({ toHomeView, addTimeItem }) => {
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={() => {
-          addTimeItem({ title, startTime });
-          toHomeView();
+          onSubmit({ title, startTime });
         }}
       >
         <Text>Submit</Text>
