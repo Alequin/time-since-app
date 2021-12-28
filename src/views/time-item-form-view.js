@@ -90,6 +90,12 @@ export const TimeItemFormView = ({
       )}
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
+        onPress={() => setStartTime(new Date())}
+      >
+        <Text>Set time to right now</Text>
+      </Button>
+      <Button
+        style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={() => {
           onSubmit({ title, startTime });
         }}
