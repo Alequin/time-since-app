@@ -5,10 +5,13 @@ import { Button } from "../button";
 
 export const NewTimeItemView = ({ toHomeView, addTimeItem }) => {
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-      toHomeView();
-      return true;
-    });
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        toHomeView();
+        return true;
+      }
+    );
     return () => backHandler.remove();
   }, []);
 
@@ -25,6 +28,7 @@ export const NewTimeItemView = ({ toHomeView, addTimeItem }) => {
         style={{ width: "50%", height: 40, backgroundColor: "white" }}
         placeholder="Title"
         value={title}
+        onChangeText={setTitle}
       />
       <Text>{`${startTime}`}</Text>
       <Button
@@ -86,9 +90,24 @@ export const NewTimeItemView = ({ toHomeView, addTimeItem }) => {
 };
 
 const DatePicker = ({ value, onChange }) => {
-  return <DateTimePicker value={value} onChange={onChange} mode="date" display="default" on />;
+  return (
+    <DateTimePicker
+      value={value}
+      onChange={onChange}
+      mode="date"
+      display="default"
+      on
+    />
+  );
 };
 
 const TimePicker = ({ value, onChange }) => {
-  return <DateTimePicker value={value} onChange={onChange} mode="time" display="default" />;
+  return (
+    <DateTimePicker
+      value={value}
+      onChange={onChange}
+      mode="time"
+      display="default"
+    />
+  );
 };

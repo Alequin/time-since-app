@@ -4,14 +4,19 @@ import { Button } from "../button";
 import { getTimeSince } from "../get-time-since";
 import { Icon } from "../icons";
 
-export const HomeView = ({ toNewTimeItemView, timeItems }) => {
+export const HomeView = ({ toNewTimeItemView, timeItems, removeTimeItem }) => {
   const currentTime = useCurrentTime();
 
   return (
     <View style={{ flex: 1, width: "100%" }}>
       <View style={{ flex: 1, width: "100%" }}>
         {timeItems.map((item) => (
-          <TimeItem key={item.startTime.getTime()} item={item} currentTime={currentTime} />
+          <TimeItem
+            key={item.id}
+            item={item}
+            currentTime={currentTime}
+            onPressDelete={() => removeTimeItem(item)}
+          />
         ))}
       </View>
       <View style={{ width: "100%", alignItems: "center" }}>
@@ -21,8 +26,11 @@ export const HomeView = ({ toNewTimeItemView, timeItems }) => {
   );
 };
 
-const TimeItem = ({ item, currentTime }) => {
-  const { days, hours, minutes, seconds } = getTimeSince(item.startTime, currentTime);
+const TimeItem = ({ item, currentTime, onPressDelete }) => {
+  const { days, hours, minutes, seconds } = getTimeSince(
+    item.startTime,
+    currentTime
+  );
 
   return (
     <View
@@ -40,9 +48,22 @@ const TimeItem = ({ item, currentTime }) => {
     >
       <Text style={{ fontSize: 18 }}>{item.title}</Text>
       <Text style={{ fontSize: 17 }}>{`Total Days: ${days}`}</Text>
-      <Text style={{ fontSize: 17 }}>{`${asTwoDigitNumber(hours)}:${asTwoDigitNumber(
-        minutes
-      )}:${asTwoDigitNumber(seconds)}`}</Text>
+      <Text style={{ fontSize: 17 }}>{`${asTwoDigitNumber(
+        hours
+      )}:${asTwoDigitNumber(minutes)}:${asTwoDigitNumber(seconds)}`}</Text>
+      <View style={{ flexDirection: "row" }}>
+        <Button
+          style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
+        >
+          <Icon name="edit" size={25} />
+        </Button>
+        <Button
+          style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
+          onPress={onPressDelete}
+        >
+          <Icon name="trashBin" size={25} />
+        </Button>
+      </View>
     </View>
   );
 };
