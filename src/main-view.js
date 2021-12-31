@@ -72,13 +72,7 @@ const useViewNavigation = () => {
 };
 
 const useTimeItems = () => {
-  const [timeItems, setTimeItems] = useState([
-    {
-      id: uniqueId(),
-      title: `Time since visiting the store`,
-      startTime: new Date("2021-12-12T19:00:00"),
-    },
-  ]);
+  const [timeItems, setTimeItems] = useState([]);
 
   return {
     timeItems,
@@ -86,7 +80,11 @@ const useTimeItems = () => {
       (newItem) =>
         setTimeItems((previousItems) => [
           ...previousItems,
-          { id: uniqueId(), ...newItem },
+          {
+            id: uniqueId(),
+            title: newItem.title,
+            startTime: newItem.startTime,
+          },
         ]),
       []
     ),

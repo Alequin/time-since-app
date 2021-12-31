@@ -96,11 +96,15 @@ export const TimeItemFormView = ({
       </Button>
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
-        onPress={() => {
-          onSubmit({ title, startTime });
-        }}
+        onPress={() => onSubmit({ title, startTime })}
       >
         <Text>Submit</Text>
+      </Button>
+      <Button
+        style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
+        onPress={onPressBack}
+      >
+        <Text>Cancel</Text>
       </Button>
     </View>
   );
