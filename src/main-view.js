@@ -22,6 +22,7 @@ export const MainView = () => {
     <View style={{ flex: 1, padding: 20 }}>
       {activeView === VIEWS.HOME_VIEW && (
         <HomeView
+          testID="home-view"
           timeItems={timeItems}
           onAddNewItem={toNewTimeItemView}
           onUpdateItem={(itemToUpdate) => {
@@ -33,6 +34,7 @@ export const MainView = () => {
       )}
       {activeView === VIEWS.NEW_TIME_ITEM_VIEW && (
         <TimeItemFormView
+          testID="new-time-item-view"
           onSubmit={(item) => {
             addTimeItem(item);
             toHomeView();
@@ -42,6 +44,7 @@ export const MainView = () => {
       )}
       {activeView === VIEWS.UPDATE_TIME_ITEM_VIEW && (
         <TimeItemFormView
+          testID="update-time-item-view"
           initialTimeItem={itemToUpdate}
           onSubmit={(item) => {
             updateTimeItem(item);
@@ -96,13 +99,17 @@ const useTimeItems = () => {
       []
     ),
     updateTimeItem: useCallback(
-      (editedItem) =>
+      (updatedItem) =>
         setTimeItems((previousItems) => {
           const newItems = [...previousItems];
           const itemIndex = newItems.findIndex(
-            ({ id }) => id !== editedItem.id
+            ({ id }) => id !== updatedItem.id
           );
-          newItems[itemIndex] = editedItem;
+          newItems[itemIndex] = {
+            ...newItems[itemIndex],
+            title: updatedItem.title,
+            startTime: updatedItem.startTime,
+          };
           return newItems;
         }),
       []

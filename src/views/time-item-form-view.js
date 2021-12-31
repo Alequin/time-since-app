@@ -9,6 +9,7 @@ const newDefaultTimeItem = () => ({
 });
 
 export const TimeItemFormView = ({
+  testID,
   initialTimeItem = newDefaultTimeItem(),
   onPressBack,
   onSubmit,
@@ -31,7 +32,7 @@ export const TimeItemFormView = ({
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   return (
-    <View style={{ flex: 1, width: "100%" }}>
+    <View testID={testID} style={{ flex: 1, width: "100%" }}>
       <TextInput
         style={{ width: "50%", height: 40, backgroundColor: "white" }}
         placeholder="Title"
@@ -43,7 +44,7 @@ export const TimeItemFormView = ({
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={() => setShowDatePicker(true)}
       >
-        <Text>{`Add Date`}</Text>
+        <Text>Change Date</Text>
       </Button>
       {showDatePicker && (
         <DatePicker
@@ -68,7 +69,7 @@ export const TimeItemFormView = ({
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={() => setShowTimePicker(true)}
       >
-        <Text>{`Add Time`}</Text>
+        <Text>Change Time</Text>
       </Button>
       {showTimePicker && (
         <TimePicker
@@ -113,6 +114,7 @@ export const TimeItemFormView = ({
 const DatePicker = ({ value, onChange }) => {
   return (
     <DateTimePicker
+      testID="date-picker"
       value={value}
       onChange={onChange}
       mode="date"
@@ -125,6 +127,7 @@ const DatePicker = ({ value, onChange }) => {
 const TimePicker = ({ value, onChange }) => {
   return (
     <DateTimePicker
+      testID="time-picker"
       value={value}
       onChange={onChange}
       mode="time"

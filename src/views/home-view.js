@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "../button";
 import { getTimeSince } from "../get-time-since";
 import { Icon } from "../icons";
+import { useCurrentTime } from "../use-current-time";
 
 export const HomeView = ({
+  testID,
   timeItems,
   onAddNewItem,
   onUpdateItem,
@@ -13,7 +15,7 @@ export const HomeView = ({
   const currentTime = useCurrentTime();
 
   return (
-    <View style={{ flex: 1, width: "100%" }}>
+    <View testID={testID} style={{ flex: 1, width: "100%" }}>
       <View style={{ flex: 1, width: "100%" }}>
         {timeItems.map((item) => (
           <TimeItem
@@ -40,6 +42,7 @@ const TimeItem = ({ item, currentTime, onPressUpdate, onPressDelete }) => {
 
   return (
     <View
+      testID="time-item"
       style={[
         {
           backgroundColor: "#909CC2",
@@ -54,9 +57,12 @@ const TimeItem = ({ item, currentTime, onPressUpdate, onPressDelete }) => {
     >
       <Text style={{ fontSize: 18 }}>{item.title}</Text>
       <Text style={{ fontSize: 17 }}>{`Total Days: ${days}`}</Text>
-      <Text style={{ fontSize: 17 }}>{`${asTwoDigitNumber(
-        hours
-      )}:${asTwoDigitNumber(minutes)}:${asTwoDigitNumber(seconds)}`}</Text>
+      <Text
+        testID="time-item-time-string"
+        style={{ fontSize: 17 }}
+      >{`${asTwoDigitNumber(hours)}:${asTwoDigitNumber(
+        minutes
+      )}:${asTwoDigitNumber(seconds)}`}</Text>
       <View style={{ flexDirection: "row" }}>
         <Button
           style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
@@ -98,19 +104,6 @@ const AddButton = ({ onPress }) => {
       <Icon name="plus" size={40} />
     </Button>
   );
-};
-
-const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return currentTime;
 };
 
 const styles = StyleSheet.create({
