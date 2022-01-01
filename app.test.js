@@ -210,6 +210,49 @@ describe("App", () => {
     expect(firstTimeString).not.toBe(secondTimeString);
   });
 
+  it("allows the user to reset to the default time while making a time item", async () => {
+    let capturedTimePickerOnChange = null;
+    DateTimePicker.mockImplementation(({ testID, onChange }) => {
+      if (testID === "time-picker") capturedTimePickerOnChange = onChange;
+      return null;
+    });
+
+    const screen = await asyncRender(<App />);
+
+    // Start on the home view with no time items
+    expect(screen.queryByTestId("home-view")).toBeTruthy();
+    expect(screen.queryAllByTestId("time-item")).toHaveLength(0);
+
+    // Press the button to create a new time item
+    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+
+    // See the new-time-item view
+    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+    // choose a custom time
+    await asyncPressEvent(getButtonByText(screen, "Change Time"));
+
+    const fiveMinutesAgo = new Date();
+    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+    await act(async () =>
+      capturedTimePickerOnChange({
+        nativeEvent: { timestamp: fiveMinutesAgo },
+      })
+    );
+
+    // reset to the default time
+    await asyncPressEvent(getButtonByText(screen, "Set time to right now"));
+
+    // Press the submit button
+    await asyncPressEvent(getButtonByText(screen, "Submit"));
+
+    // Confirm the time past is the expected value
+    expect(screen.queryByTestId("home-view")).toBeTruthy();
+    const timeItems = screen.queryAllByTestId("time-item");
+    expect(timeItems).toHaveLength(1);
+    expect(within(timeItems[0]).queryByText("00:04:59")).toBeTruthy();
+  });
+
   it("allows the user to add multiple time items", async () => {
     const screen = await asyncRender(<App />);
 
