@@ -1,15 +1,13 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BackHandler, Text, TextInput, View } from "react-native";
 import { Button } from "../button";
-
-const newDefaultTimeItem = () => ({
-  title: "",
-  startTime: new Date(),
-});
+import { newDefaultTimeItem, newTimeItem } from "../new-time-item";
+import { TimeItem } from "../time-item";
 
 export const TimeItemFormView = ({
   testID,
+  currentTime,
   initialTimeItem = newDefaultTimeItem(),
   onPressBack,
   onSubmit,
@@ -26,13 +24,18 @@ export const TimeItemFormView = ({
   }, []);
 
   const [title, setTitle] = useState(initialTimeItem.title);
+  const [startTime, setStartTime] = useState(initialTimeItem.startTime);
+  const timeItem = useMemo(
+    () => newTimeItem({ title: title || "Unnamed", startTime }),
+    [title, startTime]
+  );
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [startTime, setStartTime] = useState(initialTimeItem.startTime);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   return (
     <View testID={testID} style={{ flex: 1, width: "100%" }}>
+      <TimeItem item={timeItem} currentTime={currentTime} />
       <TextInput
         style={{ width: "50%", height: 40, backgroundColor: "white" }}
         placeholder="Title"
@@ -46,14 +49,12 @@ export const TimeItemFormView = ({
       >
         <Text>Change Date</Text>
       </Button>
-      {showDatePicker && (
-        <DatePicker
-          value={startTime}
-          onChange={({ nativeEvent }) => {
-            const selectedDate = nativeEvent.timestamp;
+      <DatePicker
+        value={startTime}
+        isOpen={showDatePicker}
+        onChange={useCallback(
+          ({ nativeEvent: { timestamp: selectedDate } }) => {
             setStartTime((previousStartDate) => {
-              if (!selectedDate) return previousStartDate;
-
               const newStartDate = new Date(previousStartDate);
               newStartDate.setFullYear(selectedDate.getFullYear());
               newStartDate.setMonth(selectedDate.getMonth());
@@ -61,24 +62,22 @@ export const TimeItemFormView = ({
               return newStartDate;
             });
             setShowDatePicker(false);
-          }}
-        />
-      )}
-
+          },
+          []
+        )}
+      />
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={() => setShowTimePicker(true)}
       >
         <Text>Change Time</Text>
       </Button>
-      {showTimePicker && (
-        <TimePicker
-          value={startTime}
-          onChange={({ nativeEvent }) => {
-            const selectedTime = nativeEvent.timestamp;
+      <TimePicker
+        value={startTime}
+        isOpen={showTimePicker}
+        onChange={useCallback(
+          ({ nativeEvent: { timestamp: selectedTime } }) => {
             setStartTime((previousStartTime) => {
-              if (!selectedTime) return previousStartTime;
-
               const newStartTime = new Date(previousStartTime);
               newStartTime.setHours(selectedTime.getHours());
               newStartTime.setMinutes(selectedTime.getMinutes());
@@ -86,9 +85,10 @@ export const TimeItemFormView = ({
               return newStartTime;
             });
             setShowTimePicker(false);
-          }}
-        />
-      )}
+          },
+          []
+        )}
+      />
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={() => setStartTime(new Date())}
@@ -97,7 +97,7 @@ export const TimeItemFormView = ({
       </Button>
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
-        onPress={() => onSubmit({ title, startTime })}
+        onPress={() => onSubmit(timeItem)}
       >
         <Text>Submit</Text>
       </Button>
@@ -111,27 +111,34 @@ export const TimeItemFormView = ({
   );
 };
 
-const DatePicker = ({ value, onChange }) => {
-  return (
-    <DateTimePicker
-      testID="date-picker"
-      value={value}
-      onChange={onChange}
-      mode="date"
-      display="default"
-      on
-    />
+const DatePicker = ({ isOpen, value, onChange }) => {
+  return useMemo(
+    () =>
+      isOpen && (
+        <DateTimePicker
+          testID="date-picker"
+          value={value}
+          onChange={onChange}
+          mode="date"
+          display="default"
+        />
+      ),
+    [isOpen, value, onChange]
   );
 };
 
-const TimePicker = ({ value, onChange }) => {
-  return (
-    <DateTimePicker
-      testID="time-picker"
-      value={value}
-      onChange={onChange}
-      mode="time"
-      display="default"
-    />
+const TimePicker = ({ isOpen, value, onChange }) => {
+  return useMemo(
+    () =>
+      isOpen && (
+        <DateTimePicker
+          testID="time-picker"
+          value={value}
+          onChange={onChange}
+          mode="time"
+          display="default"
+        />
+      ),
+    [isOpen, value, onChange]
   );
 };

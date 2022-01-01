@@ -1,6 +1,7 @@
 import uniqueId from "lodash/uniqueId";
 import React, { useCallback, useState } from "react";
 import { View } from "react-native";
+import { useCurrentTime } from "./use-current-time";
 import { HomeView } from "./views/home-view";
 import { TimeItemFormView } from "./views/time-item-form-view";
 
@@ -11,6 +12,8 @@ const VIEWS = {
 };
 
 export const MainView = () => {
+  const currentTime = useCurrentTime();
+
   const { activeView, toHomeView, toNewTimeItemView, toUpdateTimeItemView } =
     useViewNavigation();
   const { timeItems, addTimeItem, removeTimeItem, updateTimeItem } =
@@ -24,6 +27,7 @@ export const MainView = () => {
         <HomeView
           testID="home-view"
           timeItems={timeItems}
+          currentTime={currentTime}
           onAddNewItem={toNewTimeItemView}
           onUpdateItem={(itemToUpdate) => {
             setItemToUpdate(itemToUpdate);
@@ -35,6 +39,7 @@ export const MainView = () => {
       {activeView === VIEWS.NEW_TIME_ITEM_VIEW && (
         <TimeItemFormView
           testID="new-time-item-view"
+          currentTime={currentTime}
           onSubmit={(item) => {
             addTimeItem(item);
             toHomeView();
@@ -45,6 +50,7 @@ export const MainView = () => {
       {activeView === VIEWS.UPDATE_TIME_ITEM_VIEW && (
         <TimeItemFormView
           testID="update-time-item-view"
+          currentTime={currentTime}
           initialTimeItem={itemToUpdate}
           onSubmit={(item) => {
             updateTimeItem(item);

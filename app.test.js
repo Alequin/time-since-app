@@ -2,7 +2,7 @@ jest.mock("./src/use-current-time");
 jest.mock("@react-native-community/datetimepicker");
 
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { act, within } from "@testing-library/react-native";
+import { act, fireEvent, within } from "@testing-library/react-native";
 import React from "react";
 import { App } from "./App";
 import { useCurrentTime } from "./src/use-current-time";
@@ -14,10 +14,6 @@ import {
 } from "./test-utils";
 
 describe("App", () => {
-  beforeEach(() => {
-    useCurrentTime.mockReturnValue(new Date());
-  });
-
   describe("When on the home page", () => {
     it("displays an add button", async () => {
       const screen = await asyncRender(<App />);
@@ -58,59 +54,9 @@ describe("App", () => {
       // confirm the time item has been removed
       expect(screen.queryAllByTestId("time-item")).toHaveLength(0);
     });
-
-    it("edits a time item if the user presses the edit button, updates the date and submits", async () => {
-      let capturedTimePickerOnChange = null;
-      DateTimePicker.mockImplementation(({ testID, onChange }) => {
-        if (testID === "time-picker") capturedTimePickerOnChange = onChange;
-        return null;
-      });
-
-      const screen = await asyncRender(<App />);
-
-      // create a time item
-      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
-      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
-      await asyncPressEvent(getButtonByText(screen, "Submit"));
-
-      // confirm there is a time item
-      expect(screen.queryByTestId("home-view")).toBeTruthy();
-      const firstTimeItems = screen.queryAllByTestId("time-item");
-      expect(firstTimeItems).toHaveLength(1);
-      const [firstTimeString] = within(firstTimeItems[0]).queryByTestId(
-        "time-item-time-string"
-      ).children;
-
-      // press the time items edit button
-      await asyncPressEvent(
-        getButtonByChildTestId(within(firstTimeItems[0]), "editIcon")
-      );
-
-      // update the time
-      expect(screen.queryByTestId("update-time-item-view")).toBeTruthy();
-      await asyncPressEvent(getButtonByText(screen, "Change Time"));
-
-      const tenMinutesAgo = new Date();
-      tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
-      await act(async () =>
-        capturedTimePickerOnChange({
-          nativeEvent: { timestamp: tenMinutesAgo },
-        })
-      );
-      await asyncPressEvent(getButtonByText(screen, "Submit"));
-
-      // Confirm the updated time string is different from the original
-      const secondTimeItems = screen.queryAllByTestId("time-item");
-      expect(secondTimeItems).toHaveLength(1);
-      const [secondTimeString] = within(secondTimeItems[0]).queryByTestId(
-        "time-item-time-string"
-      ).children;
-
-      expect(firstTimeString).not.toBe(secondTimeString);
-    });
   });
 
-  describe("While making a new time item", () => {
+  describe("When making a new time item", () => {
     it("adds a new time item for the current time when a new time item is created with the default values on the new-time-item view", async () => {
       const screen = await asyncRender(<App />);
 
@@ -210,7 +156,7 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
-      expect(within(timeItems[0]).queryByText("00:04:59")).toBeTruthy();
+      expect(within(timeItems[0]).queryByText("00:05:00")).toBeTruthy();
     });
 
     it("allows the user to reset to the default time while making a time item", async () => {
@@ -288,5 +234,136 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       expect(screen.queryAllByTestId("time-item")).toHaveLength(5);
     });
+
+    it("displays a template time item while on the new-time-item page", async () => {
+      const screen = await asyncRender(<App />);
+
+      // User starts to create a new time item
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+      // Confirm a default time item is visible
+      const timeItem = screen.queryByTestId("time-item");
+      expect(within(timeItem).queryByText("New Event"));
+      expect(within(timeItem).queryByText("Total Days: 0"));
+      expect(within(timeItem).queryByText("00:00:00"));
+    });
+
+    it("udpates the time item template on the new-time-item page as the user changes the settings", async () => {
+      let capturedDatePickerOnChange = null;
+      let capturedTimePickerOnChange = null;
+      DateTimePicker.mockImplementation(({ testID, onChange }) => {
+        if (testID === "date-picker") capturedDatePickerOnChange = onChange;
+        if (testID === "time-picker") capturedTimePickerOnChange = onChange;
+        return null;
+      });
+
+      const screen = await asyncRender(<App />);
+
+      // User starts to create a new time item
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+      // Confirm a default time item is visible
+      const initialTimeItem = screen.queryByTestId("time-item");
+      expect(within(initialTimeItem).queryByText("New Event")).toBeTruthy();
+      expect(within(initialTimeItem).queryByText("Total Days: 0")).toBeTruthy();
+      expect(within(initialTimeItem).queryByText("00:00:00")).toBeTruthy();
+
+      // Update the title
+      const expectedTitle = "Last visit to the shop";
+      const titleInput = screen.queryByPlaceholderText("Title");
+      await fireEvent.changeText(titleInput, expectedTitle);
+
+      // Update the date
+      await asyncPressEvent(getButtonByText(screen, "Change Date"));
+
+      const fourDaysAgo = new Date();
+      fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+      await act(async () =>
+        capturedDatePickerOnChange({
+          nativeEvent: { timestamp: fourDaysAgo },
+        })
+      );
+
+      // update the time
+      await asyncPressEvent(getButtonByText(screen, "Change Time"));
+
+      const fiveMinutesAgo = new Date();
+      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+      await act(async () =>
+        capturedTimePickerOnChange({
+          nativeEvent: { timestamp: fiveMinutesAgo },
+        })
+      );
+
+      // confirm the template time item has updated
+      const updatedTimeItem = screen.queryByTestId("time-item");
+      expect(within(updatedTimeItem).queryByText(expectedTitle)).toBeTruthy();
+      expect(within(updatedTimeItem).queryByText("Total Days: 4")).toBeTruthy();
+      expect(within(updatedTimeItem).queryByText("00:05:00")).toBeTruthy();
+    });
   });
+
+  describe("When editing a time item", () => {
+    it("edits a time item if the user presses the edit button, updates the date and submits", async () => {
+      let capturedTimePickerOnChange = null;
+      DateTimePicker.mockImplementation(({ testID, onChange }) => {
+        if (testID === "time-picker") capturedTimePickerOnChange = onChange;
+        return null;
+      });
+
+      const screen = await asyncRender(<App />);
+
+      // create a time item
+      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByText(screen, "Submit"));
+
+      // confirm there is a time item
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      const firstTimeItems = screen.queryAllByTestId("time-item");
+      expect(firstTimeItems).toHaveLength(1);
+      const [firstTimeString] = within(firstTimeItems[0]).queryByTestId(
+        "time-item-time-string"
+      ).children;
+
+      // press the time items edit button
+      await asyncPressEvent(
+        getButtonByChildTestId(within(firstTimeItems[0]), "editIcon")
+      );
+
+      // update the time
+      expect(screen.queryByTestId("update-time-item-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByText(screen, "Change Time"));
+
+      const tenMinutesAgo = new Date();
+      tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
+      await act(async () =>
+        capturedTimePickerOnChange({
+          nativeEvent: { timestamp: tenMinutesAgo },
+        })
+      );
+      await asyncPressEvent(getButtonByText(screen, "Submit"));
+
+      // Confirm the updated time string is different from the original
+      const secondTimeItems = screen.queryAllByTestId("time-item");
+      expect(secondTimeItems).toHaveLength(1);
+      const [secondTimeString] = within(secondTimeItems[0]).queryByTestId(
+        "time-item-time-string"
+      ).children;
+
+      expect(firstTimeString).not.toBe(secondTimeString);
+    });
+
+    // Use cache to create default time item
+    it.todo(
+      "shows a template time item using the values from the time item to edit"
+    );
+  });
+
+  // Use cache to create default time item
+  it.todo("the current time changes overtime");
 });
