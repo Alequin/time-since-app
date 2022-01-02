@@ -1,11 +1,17 @@
-jest.mock("./src/use-current-time");
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(),
+  removeItem: jest.fn(),
+}));
+jest.mock("./src/hooks/use-current-time");
 jest.mock("@react-native-community/datetimepicker");
 
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { act, fireEvent, within } from "@testing-library/react-native";
+import { act, fireEvent, render, within } from "@testing-library/react-native";
 import React from "react";
 import { App } from "./App";
-import { useCurrentTime } from "./src/use-current-time";
+import * as asyncStorage from "./src/async-storage";
+import { newTimeItem } from "./src/new-time-item";
 import {
   asyncPressEvent,
   asyncRender,
@@ -14,10 +20,66 @@ import {
 } from "./test-utils";
 
 describe("App", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest
+      .spyOn(asyncStorage.timeItemsRepository, "save")
+      .mockImplementation(async () => {});
+    jest
+      .spyOn(asyncStorage.timeItemsRepository, "load")
+      .mockImplementation(async () => []);
+  });
+
   describe("When on the home page", () => {
     it("displays an add button", async () => {
       const screen = await asyncRender(<App />);
       expect(getButtonByChildTestId(screen, "plusIcon")).toBeTruthy();
+    });
+
+    it("loads stored time items", async () => {
+      const fourDaysAgo = new Date();
+      fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+      jest
+        .spyOn(asyncStorage.timeItemsRepository, "load")
+        .mockImplementation(async () => [
+          newTimeItem({
+            title: "test",
+            startTime: fourDaysAgo,
+          }),
+        ]);
+
+      const screen = await asyncRender(<App />);
+
+      // Start on the home view
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+
+      // confirm the time item repository was read
+      expect(asyncStorage.timeItemsRepository.load).toHaveBeenCalledTimes(1);
+
+      // confirm the stored time item is visible
+      const timeItems = screen.queryAllByTestId("time-item");
+      expect(timeItems).toHaveLength(1);
+      expect(within(timeItems[0]).queryByText("Total Days: 4"));
+    });
+
+    it("loads stored time items but displays non if there are non saved", async () => {
+      const fourDaysAgo = new Date();
+      fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+      jest
+        .spyOn(asyncStorage.timeItemsRepository, "load")
+        .mockImplementation(async () => null); // No saved time items
+
+      const screen = await asyncRender(<App />);
+
+      // Start on the home view
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+
+      // confirm the time item repository was read
+      expect(asyncStorage.timeItemsRepository.load).toHaveBeenCalledTimes(1);
+
+      // confirm the stored time item is visible
+      const timeItems = screen.queryAllByTestId("time-item");
+      expect(timeItems).toHaveLength(0);
     });
 
     it("changes the view to the new-time-item view when the add button is pressed", async () => {
@@ -200,6 +262,31 @@ describe("App", () => {
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
       expect(within(timeItems[0]).queryByText("00:00:00")).toBeTruthy();
+    });
+
+    it("adds the new time item into storage when it is created", async () => {
+      const screen = await asyncRender(<App />);
+
+      // Start on the home view with no time items
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      expect(screen.queryAllByTestId("time-item")).toHaveLength(0);
+
+      // Press the button to create a new time item
+      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+
+      // See the new-time-item view
+      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+      // Press the submit button
+      await asyncPressEvent(getButtonByText(screen, "Submit"));
+
+      // Confirm a new time item was saved in storage
+      expect(asyncStorage.timeItemsRepository.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.timeItemsRepository.save).toHaveBeenCalledWith({
+        id: expect.any(Number),
+        title: "New Event",
+        startTime: expect.any(Date),
+      });
     });
 
     it("allows the user to add multiple time items", async () => {

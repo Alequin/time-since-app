@@ -1,6 +1,16 @@
-import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 
-export const asyncRender = async (component) => waitFor(() => render(component));
+export const asyncRender = async (component) =>
+  waitFor(() => {
+    jest.clearAllMocks(); // clear mocks in case wait for had to run multiple interations
+    return render(component);
+  });
 
 export const asyncPressEvent = async (button) => {
   expect(button).toBeTruthy();
@@ -17,7 +27,8 @@ export const getButtonByChildTestId = (screen, childTestId) => {
   return buttons.find((button) => within(button).queryByTestId(childTestId));
 };
 
-export const buttonProps = (buttonComponent) => buttonComponent.parent.parent.parent.parent.props;
+export const buttonProps = (buttonComponent) =>
+  buttonComponent.parent.parent.parent.parent.props;
 
 export const silenceAllErrorLogs = () => {
   jest.spyOn(console, "error").mockImplementation(() => {});

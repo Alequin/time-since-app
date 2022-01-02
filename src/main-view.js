@@ -1,7 +1,9 @@
-import uniqueId from "lodash/uniqueId";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
-import { useCurrentTime } from "./use-current-time";
+import { timeItemsRepository } from "./async-storage";
+import { useCurrentTime } from "./hooks/use-current-time";
+import { useTimeItems } from "./hooks/use-time-items";
+import { useViewNavigation } from "./hooks/use-view-navigations";
 import { HomeView } from "./views/home-view";
 import { TimeItemFormView } from "./views/time-item-form-view";
 
@@ -40,7 +42,8 @@ export const MainView = () => {
         <TimeItemFormView
           testID="new-time-item-view"
           currentTime={currentTime}
-          onSubmit={(item) => {
+          onSubmit={async (item) => {
+            await timeItemsRepository.save(item);
             addTimeItem(item);
             toHomeView();
           }}
@@ -61,64 +64,4 @@ export const MainView = () => {
       )}
     </View>
   );
-};
-
-const useViewNavigation = () => {
-  const [activeView, setActiveView] = useState(VIEWS.HOME_VIEW);
-
-  return {
-    activeView,
-    toHomeView: useCallback(() => setActiveView(VIEWS.HOME_VIEW), []),
-    toNewTimeItemView: useCallback(
-      () => setActiveView(VIEWS.NEW_TIME_ITEM_VIEW),
-      []
-    ),
-    toUpdateTimeItemView: useCallback(
-      () => setActiveView(VIEWS.UPDATE_TIME_ITEM_VIEW),
-      []
-    ),
-  };
-};
-
-const useTimeItems = () => {
-  const [timeItems, setTimeItems] = useState([]);
-
-  return {
-    timeItems,
-    addTimeItem: useCallback(
-      (newItem) =>
-        setTimeItems((previousItems) => [
-          ...previousItems,
-          {
-            id: uniqueId(),
-            title: newItem.title,
-            startTime: newItem.startTime,
-          },
-        ]),
-      []
-    ),
-    removeTimeItem: useCallback(
-      (itemToRemove) =>
-        setTimeItems((previousItems) =>
-          previousItems.filter(({ id }) => id !== itemToRemove.id)
-        ),
-      []
-    ),
-    updateTimeItem: useCallback(
-      (updatedItem) =>
-        setTimeItems((previousItems) => {
-          const newItems = [...previousItems];
-          const itemIndex = newItems.findIndex(
-            ({ id }) => id !== updatedItem.id
-          );
-          newItems[itemIndex] = {
-            ...newItems[itemIndex],
-            title: updatedItem.title,
-            startTime: updatedItem.startTime,
-          };
-          return newItems;
-        }),
-      []
-    ),
-  };
 };

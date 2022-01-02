@@ -2,6 +2,7 @@ import { isDate } from "lodash";
 
 export const newTimeItem = (options) => {
   const newItem = {
+    id: randomId(),
     title: options.title,
     startTime: options.startTime,
   };
@@ -22,3 +23,5 @@ export const newDefaultTimeItem = () =>
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);
 };
+
+const randomId = () => Date.now() + Math.random();
