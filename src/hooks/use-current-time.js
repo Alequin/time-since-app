@@ -7,7 +7,7 @@ export const useCurrentTime = () => {
     let hasUnmounted = false;
     const interval = setInterval(() => {
       if (!hasUnmounted) setCurrentTime(new Date());
-    }, 1000);
+    }, 30000);
     return () => {
       hasUnmounted = true;
       clearInterval(interval);
