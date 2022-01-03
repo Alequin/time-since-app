@@ -37,8 +37,7 @@ describe("App", () => {
     });
 
     it("loads stored time items", async () => {
-      const fourDaysAgo = new Date();
-      fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+      const fourDaysAgo = newDateShiftedBy({ date: -4 });
       jest
         .spyOn(asyncStorage.timeItemsRepository, "load")
         .mockImplementation(async () => [
@@ -63,8 +62,7 @@ describe("App", () => {
     });
 
     it("loads stored time items but displays non if there are non saved", async () => {
-      const fourDaysAgo = new Date();
-      fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+      const fourDaysAgo = newDateShiftedBy({ date: -4 });
       jest
         .spyOn(asyncStorage.timeItemsRepository, "load")
         .mockImplementation(async () => null); // No saved time items
@@ -162,8 +160,7 @@ describe("App", () => {
       // choose a custom date
       await asyncPressEvent(getButtonByText(screen, "Change Date"));
 
-      const fourDaysAgo = new Date();
-      fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+      const fourDaysAgo = newDateShiftedBy({ date: -4 });
       await act(async () =>
         capturedDatePickerOnChange({
           nativeEvent: { timestamp: fourDaysAgo },
@@ -445,12 +442,42 @@ describe("App", () => {
       expect(firstTimeString).not.toBe(secondTimeString);
     });
 
-    // Use cache to create default time item
-    it.todo(
-      "shows a template time item using the values from the time item to edit"
-    );
-  });
+    it("shows a template time item using the values from the time item to edit", async () => {
+      const fourDaysAgo = newDateShiftedBy({ date: -4 });
+      jest
+        .spyOn(asyncStorage.timeItemsRepository, "load")
+        .mockImplementation(async () => [
+          newTimeItem({
+            title: "test",
+            startTime: fourDaysAgo,
+          }),
+        ]);
 
-  // Use cache to create default time item
-  it.todo("the current time changes overtime");
+      const screen = await asyncRender(<App />);
+
+      // confirm the stored time item is visible
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      const timeItems = screen.queryAllByTestId("time-item");
+      expect(timeItems).toHaveLength(1);
+      expect(within(timeItems[0]).queryByText("Total Days: 4"));
+
+      // User starts to create a new time item
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+      // Confirm a default time item is visible
+      const timeItem = screen.queryByTestId("time-item");
+      expect(within(timeItem).queryByText("New Event"));
+      expect(within(timeItem).queryByText("Total Days: 0"));
+      expect(within(timeItem).queryByText("00:00:00"));
+    });
+  });
 });
+
+const newDateShiftedBy = ({ date, minutes }) => {
+  const newDate = new Date();
+  if (date) newDate.setDate(newDate.getDate() + date);
+  if (minutes) fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() + minutes);
+  return newDate;
+};
