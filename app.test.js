@@ -11,6 +11,7 @@ import { act, fireEvent, render, within } from "@testing-library/react-native";
 import React from "react";
 import { App } from "./App";
 import * as asyncStorage from "./src/async-storage";
+import * as useCurrentTime from "./src/hooks/use-current-time";
 import { newTimeItem } from "./src/new-time-item";
 import {
   asyncPressEvent,
@@ -22,6 +23,7 @@ import {
 describe("App", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useCurrentTime.useCurrentTime.mockImplementation(() => new Date());
     jest
       .spyOn(asyncStorage.timeItemsRepository, "save")
       .mockImplementation(async () => {});
