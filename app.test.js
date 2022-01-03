@@ -58,7 +58,7 @@ describe("App", () => {
       // confirm the stored time item is visible
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
-      expect(within(timeItems[0]).queryByText("Total Days: 4"));
+      expect(within(timeItems[0]).queryByText("4"));
     });
 
     it("loads stored time items but displays non if there are non saved", async () => {
@@ -215,7 +215,7 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
-      expect(within(timeItems[0]).queryByText("00:05:00")).toBeTruthy();
+      expect(within(timeItems[0]).queryByText("00:05")).toBeTruthy();
     });
 
     it("allows the user to reset to the default time while making a time item", async () => {
@@ -258,7 +258,7 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
-      expect(within(timeItems[0]).queryByText("00:00:00")).toBeTruthy();
+      expect(within(timeItems[0]).queryByText("00:00")).toBeTruthy();
     });
 
     it("adds the new time item into storage when it is created", async () => {
@@ -331,7 +331,7 @@ describe("App", () => {
       const timeItem = screen.queryByTestId("time-item");
       expect(within(timeItem).queryByText("New Event"));
       expect(within(timeItem).queryByText("Total Days: 0"));
-      expect(within(timeItem).queryByText("00:00:00"));
+      expect(within(timeItem).queryByText("00:00"));
     });
 
     it("udpates the time item template on the new-time-item page as the user changes the settings", async () => {
@@ -354,7 +354,7 @@ describe("App", () => {
       const initialTimeItem = screen.queryByTestId("time-item");
       expect(within(initialTimeItem).queryByText("New Event")).toBeTruthy();
       expect(within(initialTimeItem).queryByText("Total Days: 0")).toBeTruthy();
-      expect(within(initialTimeItem).queryByText("00:00:00")).toBeTruthy();
+      expect(within(initialTimeItem).queryByText("00:00")).toBeTruthy();
 
       // Update the title
       const expectedTitle = "Last visit to the shop";
@@ -387,7 +387,7 @@ describe("App", () => {
       const updatedTimeItem = screen.queryByTestId("time-item");
       expect(within(updatedTimeItem).queryByText(expectedTitle)).toBeTruthy();
       expect(within(updatedTimeItem).queryByText("Total Days: 4")).toBeTruthy();
-      expect(within(updatedTimeItem).queryByText("00:05:00")).toBeTruthy();
+      expect(within(updatedTimeItem).queryByText("00:05")).toBeTruthy();
     });
   });
 
@@ -470,7 +470,7 @@ describe("App", () => {
       const timeItem = screen.queryByTestId("time-item");
       expect(within(timeItem).queryByText("New Event"));
       expect(within(timeItem).queryByText("Total Days: 0"));
-      expect(within(timeItem).queryByText("00:00:00"));
+      expect(within(timeItem).queryByText("00:00"));
     });
   });
 });

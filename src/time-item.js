@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Text, View } from "react-native";
 import { Button } from "./button";
 import { getTimeSince } from "./get-time-since";
@@ -11,9 +11,9 @@ export const TimeItem = ({
   onPressUpdate,
   onPressDelete,
 }) => {
-  const { days, hours, minutes, seconds } = getTimeSince(
-    item.startTime,
-    currentTime
+  const { days, hours, minutes } = useMemo(
+    () => getTimeSince(item.startTime, currentTime),
+    [item.startTime, currentTime]
   );
 
   return (
@@ -36,9 +36,7 @@ export const TimeItem = ({
       <Text
         testID="time-item-time-string"
         style={{ fontSize: 17 }}
-      >{`${asTwoDigitNumber(hours)}:${asTwoDigitNumber(
-        minutes
-      )}:${asTwoDigitNumber(seconds)}`}</Text>
+      >{`${asTwoDigitNumber(hours)}:${asTwoDigitNumber(minutes)}`}</Text>
       <View style={{ flexDirection: "row" }}>
         {onPressUpdate && (
           <Button
@@ -62,5 +60,5 @@ export const TimeItem = ({
 };
 
 const asTwoDigitNumber = (number) => {
-  return number.toString().length === 1 ? `0${number}` : number;
+  return number.toString().length === 1 ? `0${number}` : number.toString();
 };
