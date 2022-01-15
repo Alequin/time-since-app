@@ -40,6 +40,14 @@ export const expectTimeItemContents = ({
     value: minutes,
     label: "Minutes",
   });
+
+  // Seconds are flaky to test so rely on "get-time-since.js" unit tests to confirm the value is as expected
+  expectTimeUnitInTimeItem({
+    timeItem,
+    unitId: "Seconds-unit",
+    value: /\d?\d/,
+    label: "Seconds",
+  });
 };
 
 const expectTimeUnitInTimeItem = ({ timeItem, unitId, value, label }) => {

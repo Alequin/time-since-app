@@ -11,7 +11,7 @@ export const TimeItem = ({
   onPressUpdate,
   onPressDelete,
 }) => {
-  const { days, hours, minutes } = useMemo(
+  const { days, hours, minutes, seconds } = useMemo(
     () => getTimeSince(item.startTime, currentTime),
     [item.startTime, currentTime]
   );
@@ -21,8 +21,9 @@ export const TimeItem = ({
       { label: "Days", value: days },
       { label: "Hours", value: hours },
       { label: "Minutes", value: minutes },
+      { label: "Seconds", value: seconds },
     ],
-    [days, hours, minutes]
+    [days, hours, minutes, seconds]
   );
 
   return (
@@ -42,7 +43,7 @@ export const TimeItem = ({
         commonStyles.shadow,
       ]}
     >
-      <Text style={{ fontSize: 18 }}>{item.title}</Text>
+      <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.title}</Text>
       <View
         style={{
           width: "60%",
@@ -77,8 +78,8 @@ const TimeUnit = ({ value, label }) => {
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 17 }}>{value}</Text>
-      <Text style={{ fontSize: 17 }}>{label}</Text>
+      <Text style={{ fontWeight: "bold" }}>{value}</Text>
+      <Text style={{ fontWeight: "bold" }}>{label}</Text>
     </View>
   );
 };
