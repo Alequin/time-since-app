@@ -3,17 +3,17 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   getItem: jest.fn(),
   removeItem: jest.fn(),
 }));
-jest.mock("./src/hooks/use-current-time");
+jest.mock("../src/hooks/use-current-time");
 jest.mock("@react-native-community/datetimepicker");
 
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { act, fireEvent, within } from "@testing-library/react-native";
+import { act, within } from "@testing-library/react-native";
 import React from "react";
 import waitForExpect from "wait-for-expect";
-import { App } from "./App";
-import * as asyncStorage from "./src/async-storage";
-import * as useCurrentTime from "./src/hooks/use-current-time";
-import { newTimeItem } from "./src/time-item-utils";
+import { App } from "../App";
+import * as asyncStorage from "../src/async-storage";
+import * as useCurrentTime from "../src/hooks/use-current-time";
+import { newTimeItem } from "../src/time-item-utils";
 import {
   asyncPressEvent,
   asyncRender,
@@ -22,7 +22,7 @@ import {
   getButtonByText,
   silenceAllErrorLogs,
 } from "./test-utils";
-import { newDateShiftedBy } from "./tests/new-date-shifted-by";
+import { newDateShiftedBy } from "./new-date-shifted-by";
 
 describe("App", () => {
   beforeEach(() => {
