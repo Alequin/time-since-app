@@ -20,6 +20,7 @@ import {
   enableAllErrorLogs,
   getButtonByChildTestId,
   getButtonByText,
+  setSecondsToZero,
   silenceAllErrorLogs,
 } from "./test-utils";
 import { newDateShiftedBy } from "./new-date-shifted-by";
@@ -28,7 +29,9 @@ import { expectTimeItemContents } from "./custom-expects/expect-time-item";
 describe("App", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    useCurrentTime.useCurrentTime.mockImplementation(() => new Date());
+    useCurrentTime.useCurrentTime.mockImplementation(() =>
+      setSecondsToZero(new Date())
+    );
     jest
       .spyOn(asyncStorage.timeItemsRepository, "save")
       .mockImplementation(async () => {});
@@ -289,10 +292,11 @@ describe("App", () => {
       // choose a custom time
       await asyncPressEvent(getButtonByText(screen, "Change Time"));
 
-      const fiveMinutesAgo = newDateShiftedBy({ minutes: -5 });
       await act(async () =>
         capturedTimePickerOnChange({
-          nativeEvent: { timestamp: fiveMinutesAgo },
+          nativeEvent: {
+            timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -5 })),
+          },
         })
       );
 
@@ -497,7 +501,7 @@ describe("App", () => {
       });
     });
 
-    it("edits a time item if the user presses the edit button, updates the time and submits", async () => {
+    it.only("edits a time item if the user presses the edit button, updates the time and submits", async () => {
       let capturedTimePickerOnChange = null;
       DateTimePicker.mockImplementation(({ testID, onChange }) => {
         if (testID === "time-picker") capturedTimePickerOnChange = onChange;
@@ -534,7 +538,9 @@ describe("App", () => {
 
       await act(async () =>
         capturedTimePickerOnChange({
-          nativeEvent: { timestamp: newDateShiftedBy({ minutes: -10 }) },
+          nativeEvent: {
+            timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -10 })),
+          },
         })
       );
       await asyncPressEvent(getButtonByText(screen, "Submit"));
@@ -698,7 +704,9 @@ describe("App", () => {
 
       await act(async () =>
         capturedTimePickerOnChange({
-          nativeEvent: { timestamp: newDateShiftedBy({ minutes: -10 }) },
+          nativeEvent: {
+            timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -10 })),
+          },
         })
       );
 

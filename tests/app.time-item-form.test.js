@@ -17,6 +17,7 @@ import {
   asyncRender,
   getButtonByChildTestId,
   getButtonByText,
+  setSecondsToZero,
 } from "./test-utils";
 import { newDateShiftedBy } from "./new-date-shifted-by";
 import { expectTimeItemContents } from "./custom-expects/expect-time-item";
@@ -24,7 +25,9 @@ import { expectTimeItemContents } from "./custom-expects/expect-time-item";
 describe("App - time item form", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    useCurrentTime.useCurrentTime.mockImplementation(() => new Date());
+    useCurrentTime.useCurrentTime.mockImplementation(() =>
+      setSecondsToZero(new Date())
+    );
     jest
       .spyOn(asyncStorage.timeItemsRepository, "save")
       .mockImplementation(async () => {});
@@ -56,7 +59,9 @@ describe("App - time item form", () => {
 
     await act(async () =>
       capturedTimePickerOnChange({
-        nativeEvent: { timestamp: newDateShiftedBy({ minutes: -5 }) },
+        nativeEvent: {
+          timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -5 })),
+        },
       })
     );
 
@@ -135,7 +140,9 @@ describe("App - time item form", () => {
 
     await act(async () =>
       capturedTimePickerOnChange({
-        nativeEvent: { timestamp: newDateShiftedBy({ minutes: -5 }) },
+        nativeEvent: {
+          timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -5 })),
+        },
       })
     );
     await asyncPressEvent(getButtonByText(screen, "Submit"));

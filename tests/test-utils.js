@@ -37,3 +37,14 @@ export const silenceAllErrorLogs = () => {
 export const enableAllErrorLogs = () => {
   console.error?.mockRestore?.();
 };
+
+/**
+ * Set the seconds in the given date object to 0
+ *
+ * - This is to reduce how flaky some test are. The expected minutes might change based on the seconds
+ */
+export const setSecondsToZero = (date) => {
+  const newDate = new Date(date);
+  newDate.setSeconds(0);
+  return newDate;
+};

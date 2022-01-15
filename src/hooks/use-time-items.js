@@ -9,10 +9,13 @@ export const useTimeItems = () => {
   const [timeItems, setTimeItems] = useState([]);
 
   useEffect(() => {
+    let hasUnmounted = false;
     timeItemsRepository.load().then((loadedItems) => {
+      if (hasUnmounted) return;
       if (!isEmpty(loadedItems)) setTimeItems(loadedItems.map(newTimeItem));
       setHasLoadedCache(true);
     });
+    return () => (hasUnmounted = true);
   }, []);
 
   useEffect(() => {
