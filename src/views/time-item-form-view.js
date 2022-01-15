@@ -24,14 +24,22 @@ export const TimeItemFormView = ({
   }, []);
 
   const [title, setTitle] = useState(initialTimeItem.title);
-  const [startTime, setStartTime] = useState(initialTimeItem.startTime);
+
+  const {
+    startTime,
+    isDatePickerVisible,
+    isTimePickerVisible,
+    resetTime,
+    showDatePicker,
+    showTimePicker,
+    setDateWithDateTimePicker,
+    setTimeWithDateTimePicker,
+  } = useDateTimePickerState(initialTimeItem.startTime);
+
   const timeItem = useMemo(
     () => newTimeItem({ title: title || "Unnamed", startTime }),
     [title, startTime]
   );
-
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
 
   return (
     <View testID={testID} style={{ flex: 1, width: "100%" }}>
@@ -45,53 +53,29 @@ export const TimeItemFormView = ({
       <Text>{`${startTime}`}</Text>
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
-        onPress={() => setShowDatePicker(true)}
+        onPress={showDatePicker}
       >
         <Text>Change Date</Text>
       </Button>
-      <DatePicker
-        value={startTime}
-        isOpen={showDatePicker}
-        onChange={useCallback(
-          ({ nativeEvent: { timestamp: selectedDate } }) => {
-            setStartTime((previousStartDate) => {
-              const newStartDate = new Date(previousStartDate);
-              newStartDate.setFullYear(selectedDate.getFullYear());
-              newStartDate.setMonth(selectedDate.getMonth());
-              newStartDate.setDate(selectedDate.getDate());
-              return newStartDate;
-            });
-            setShowDatePicker(false);
-          },
-          []
-        )}
-      />
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
-        onPress={() => setShowTimePicker(true)}
+        onPress={showTimePicker}
       >
         <Text>Change Time</Text>
       </Button>
+      <DatePicker
+        value={startTime}
+        isOpen={isDatePickerVisible}
+        onChange={setDateWithDateTimePicker}
+      />
       <TimePicker
         value={startTime}
-        isOpen={showTimePicker}
-        onChange={useCallback(
-          ({ nativeEvent: { timestamp: selectedTime } }) => {
-            setStartTime((previousStartTime) => {
-              const newStartTime = new Date(previousStartTime);
-              newStartTime.setHours(selectedTime.getHours());
-              newStartTime.setMinutes(selectedTime.getMinutes());
-              newStartTime.setSeconds(selectedTime.getSeconds());
-              return newStartTime;
-            });
-            setShowTimePicker(false);
-          },
-          []
-        )}
+        isOpen={isTimePickerVisible}
+        onChange={setTimeWithDateTimePicker}
       />
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
-        onPress={() => setStartTime(new Date())}
+        onPress={resetTime}
       >
         <Text>Set time to right now</Text>
       </Button>
@@ -105,7 +89,7 @@ export const TimeItemFormView = ({
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={onPressBack}
       >
-        <Text>Cancel</Text>
+        <Text>Go back</Text>
       </Button>
     </View>
   );
@@ -141,4 +125,45 @@ const TimePicker = ({ isOpen, value, onChange }) => {
       ),
     [isOpen, value, onChange]
   );
+};
+
+const useDateTimePickerState = (initialStartTime) => {
+  const [startTime, setStartTime] = useState(initialStartTime);
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
+
+  return {
+    startTime,
+    isDatePickerVisible,
+    isTimePickerVisible,
+    showDatePicker: () => setIsDatePickerVisible(true),
+    showTimePicker: () => setIsTimePickerVisible(true),
+    resetTime: () => setStartTime(new Date()),
+    setDateWithDateTimePicker: useCallback(
+      ({ nativeEvent: { timestamp: selectedDate } }) => {
+        setStartTime((previousStartDate) => {
+          const newStartDate = new Date(previousStartDate);
+          newStartDate.setFullYear(selectedDate.getFullYear());
+          newStartDate.setMonth(selectedDate.getMonth());
+          newStartDate.setDate(selectedDate.getDate());
+          return newStartDate;
+        });
+        setIsDatePickerVisible(false);
+      },
+      []
+    ),
+    setTimeWithDateTimePicker: useCallback(
+      ({ nativeEvent: { timestamp: selectedTime } }) => {
+        setStartTime((previousStartTime) => {
+          const newStartTime = new Date(previousStartTime);
+          newStartTime.setHours(selectedTime.getHours());
+          newStartTime.setMinutes(selectedTime.getMinutes());
+          newStartTime.setSeconds(selectedTime.getSeconds());
+          return newStartTime;
+        });
+        setIsTimePickerVisible(false);
+      },
+      []
+    ),
+  };
 };
