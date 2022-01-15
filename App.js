@@ -1,11 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { ErrorBoundary } from "./src/error-boundary";
 import { MainView } from "./src/main-view";
+import { ErrorView } from "./src/views/error-view";
 
 // base
 // colour pallet https://coolors.co/909cc2-084887-ffa500-f7f5fb-d0f4de
@@ -16,6 +18,8 @@ import { MainView } from "./src/main-view";
 // https://coolors.co/909cc2-cd5334-084887-8ea604-ffa500-bf3100-69995d-f7f5fb-fe938c-d0f4de
 
 export const App = () => {
+  const { shouldResetApp, startAppReset } = useHandleAppError();
+
   return (
     <View
       style={{
@@ -24,9 +28,35 @@ export const App = () => {
       }}
     >
       <StatusBar style={{ color: "black" }} backgroundColor="#F7F5FB" />
-      <MainView />
+      {shouldResetApp ? (
+        <ErrorView testID="error-view" />
+      ) : (
+        <ErrorBoundary onError={startAppReset}>
+          <MainView />
+        </ErrorBoundary>
+      )}
     </View>
   );
+};
+
+const useHandleAppError = () => {
+  const [shouldResetApp, setShouldResetApp] = useState(false);
+
+  useEffect(() => {
+    if (shouldResetApp) {
+      const timeout = setTimeout(() => setShouldResetApp(false), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [shouldResetApp]);
+
+  return {
+    shouldResetApp,
+    startAppReset: (error) => {
+      // console.error("An error has caused the app to crash. Resetting app");
+      // console.error(error);
+      setShouldResetApp(true);
+    },
+  };
 };
 
 const AppWindow = () => {

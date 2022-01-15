@@ -29,7 +29,8 @@
     "@babel/core": "^7.12.9",
     "@testing-library/jest-native": "^4.0.4",
     "@testing-library/react-native": "^9.0.0",
-    "jest-expo": "~43.0.0"
+    "jest-expo": "~43.0.0",
+    "wait-for-expect": "^3.0.2"
   },
   "private": true
 }

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View } from "react-native";
-import { timeItemsRepository } from "./async-storage";
 import { useCurrentTime } from "./hooks/use-current-time";
 import { useTimeItems } from "./hooks/use-time-items";
 import { useViewNavigation } from "./hooks/use-view-navigations";

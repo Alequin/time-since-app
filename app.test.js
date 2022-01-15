@@ -7,7 +7,13 @@ jest.mock("./src/hooks/use-current-time");
 jest.mock("@react-native-community/datetimepicker");
 
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { act, fireEvent, render, within } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import React from "react";
 import { App } from "./App";
 import * as asyncStorage from "./src/async-storage";
@@ -17,9 +23,12 @@ import { TimeItem } from "./src/time-item";
 import {
   asyncPressEvent,
   asyncRender,
+  enableAllErrorLogs,
   getButtonByChildTestId,
   getButtonByText,
+  silenceAllErrorLogs,
 } from "./test-utils";
+import waitForExpect from "wait-for-expect";
 
 describe("App", () => {
   beforeEach(() => {
@@ -447,6 +456,10 @@ describe("App", () => {
         minutes: "5",
       });
     });
+
+    it.todo(
+      "allows the user to return to the home view without creating a time item"
+    );
   });
 
   describe("When editing a time item", () => {
@@ -535,7 +548,40 @@ describe("App", () => {
       expect(within(timeItem).queryByText("Total Days: 0"));
       expect(within(timeItem).queryByText("00:00"));
     });
+
+    it.todo(
+      "allows the user to return to the home view without editing the selected time item"
+    );
   });
+
+  it("Returns the app to a default state when an unrecoverable error occures", async () => {
+    // Mock apart of the logic encoutering a fatal error
+    useCurrentTime.useCurrentTime.mockImplementation(() => {
+      throw new Error("mock fatal error to force app restart");
+    });
+
+    silenceAllErrorLogs();
+
+    const screen = await asyncRender(<App />);
+
+    // Confirm the error page is visible
+    await waitForExpect(async () => {
+      expect(screen.queryByTestId("error-view")).toBeTruthy();
+      expect(
+        screen.queryByText("Sorry, the app has encountered an issue")
+      ).toBeTruthy();
+    });
+
+    // Reset the mocked code to work again
+    useCurrentTime.useCurrentTime.mockImplementation(() => new Date());
+
+    // Confirm the home view is visible
+    await waitForExpect(async () =>
+      expect(screen.queryByTestId("home-view")).toBeTruthy()
+    );
+
+    enableAllErrorLogs();
+  }, 10000);
 });
 
 const newDateShiftedBy = ({ date, hours, minutes }) => {
