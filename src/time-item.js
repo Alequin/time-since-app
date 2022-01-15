@@ -32,10 +32,12 @@ export const TimeItem = ({
         {
           backgroundColor: "#909CC2",
           width: "100%",
-          height: 100,
+          height: 120,
           borderRadius: 20,
-          justifyContent: "center",
+          justifyContent: "space-around",
           alignItems: "center",
+          paddingVertical: 5,
+          marginBottom: 15,
         },
         commonStyles.shadow,
       ]}
@@ -54,20 +56,13 @@ export const TimeItem = ({
       </View>
       <View style={{ flexDirection: "row" }}>
         {onPressUpdate && (
-          <Button
-            style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
-            onPress={() => onPressUpdate(item)}
-          >
-            <Icon name="edit" size={25} />
-          </Button>
+          <TimeItemButton iconName="edit" onPress={() => onPressUpdate(item)} />
         )}
         {onPressDelete && (
-          <Button
-            style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
+          <TimeItemButton
+            iconName="trashBin"
             onPress={() => onPressDelete(item)}
-          >
-            <Icon name="trashBin" size={25} />
-          </Button>
+          />
         )}
       </View>
     </View>
@@ -85,5 +80,16 @@ const TimeUnit = ({ value, label }) => {
       <Text style={{ fontSize: 17 }}>{value}</Text>
       <Text style={{ fontSize: 17 }}>{label}</Text>
     </View>
+  );
+};
+
+const TimeItemButton = ({ onPress, iconName }) => {
+  return (
+    <Button
+      style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
+      onPress={onPress}
+    >
+      <Icon name={iconName} size={25} />
+    </Button>
   );
 };
