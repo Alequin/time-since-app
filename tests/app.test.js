@@ -412,9 +412,109 @@ describe("App", () => {
       });
     });
 
-    it.todo(
-      "allows the user to return to the home view without editing the selected time item"
-    );
+    it("allows the user to return to the home view without editing the selected time item", async () => {
+      let capturedTimePickerOnChange = null;
+      DateTimePicker.mockImplementation(({ testID, onChange }) => {
+        if (testID === "time-picker") capturedTimePickerOnChange = onChange;
+        return null;
+      });
+
+      const screen = await asyncRender(<App />);
+
+      // create a time item
+      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByText(screen, "Submit"));
+
+      // confirm the value of the first time item
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      const firstTimeItems = screen.queryAllByTestId("time-item");
+      expect(firstTimeItems).toHaveLength(1);
+      expectTimeItemContents({
+        timeItem: firstTimeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "0",
+      });
+
+      // press the time items edit button
+      await asyncPressEvent(
+        getButtonByChildTestId(within(firstTimeItems[0]), "editIcon")
+      );
+
+      // press the button to return to the home view rather than the submit button
+      await asyncPressEvent(getButtonByText(screen, "Go back"));
+
+      // Confirm the updated time is the same as the original
+      const secondTimeItems = screen.queryAllByTestId("time-item");
+      expect(secondTimeItems).toHaveLength(1);
+
+      expectTimeItemContents({
+        timeItem: secondTimeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "0",
+      });
+    });
+
+    it("allows the user to return to the home view without editing the selected time item, even if they update the time value but then change their mind", async () => {
+      let capturedTimePickerOnChange = null;
+      DateTimePicker.mockImplementation(({ testID, onChange }) => {
+        if (testID === "time-picker") capturedTimePickerOnChange = onChange;
+        return null;
+      });
+
+      const screen = await asyncRender(<App />);
+
+      // create a time item
+      await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+      expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByText(screen, "Submit"));
+
+      // confirm the value of the first time item
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+      const firstTimeItems = screen.queryAllByTestId("time-item");
+      expect(firstTimeItems).toHaveLength(1);
+      expectTimeItemContents({
+        timeItem: firstTimeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "0",
+      });
+
+      // press the time items edit button
+      await asyncPressEvent(
+        getButtonByChildTestId(within(firstTimeItems[0]), "editIcon")
+      );
+
+      // update the time
+      expect(screen.queryByTestId("update-time-item-view")).toBeTruthy();
+      await asyncPressEvent(getButtonByText(screen, "Change Time"));
+
+      await act(async () =>
+        capturedTimePickerOnChange({
+          nativeEvent: { timestamp: newDateShiftedBy({ minutes: -10 }) },
+        })
+      );
+
+      // press the button to return to the home view rather than the submit button
+      await asyncPressEvent(getButtonByText(screen, "Go back"));
+
+      // Confirm the updated time is the same as the original
+      const secondTimeItems = screen.queryAllByTestId("time-item");
+      expect(secondTimeItems).toHaveLength(1);
+
+      expectTimeItemContents({
+        timeItem: secondTimeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "0",
+      });
+    });
   });
 
   it("Returns the app to a default state when an unrecoverable error occures", async () => {
