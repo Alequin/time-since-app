@@ -16,6 +16,15 @@ export const TimeItem = ({
     [item.startTime, currentTime]
   );
 
+  const timeUnits = useMemo(
+    () => [
+      { label: "Days", value: days },
+      { label: "Hours", value: hours },
+      { label: "Minutes", value: minutes },
+    ],
+    [days, hours, minutes]
+  );
+
   return (
     <View
       testID="time-item"
@@ -32,11 +41,17 @@ export const TimeItem = ({
       ]}
     >
       <Text style={{ fontSize: 18 }}>{item.title}</Text>
-      <Text style={{ fontSize: 17 }}>{`Total Days: ${days}`}</Text>
-      <Text
-        testID="time-item-time-string"
-        style={{ fontSize: 17 }}
-      >{`${asTwoDigitNumber(hours)}:${asTwoDigitNumber(minutes)}`}</Text>
+      <View
+        style={{
+          width: "60%",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        {timeUnits.map(({ label, value }) => (
+          <TimeUnit key={label} label={label} value={value} />
+        ))}
+      </View>
       <View style={{ flexDirection: "row" }}>
         {onPressUpdate && (
           <Button
@@ -59,6 +74,16 @@ export const TimeItem = ({
   );
 };
 
-const asTwoDigitNumber = (number) => {
-  return number.toString().length === 1 ? `0${number}` : number.toString();
+const TimeUnit = ({ value, label }) => {
+  return (
+    <View
+      testID={`${label}-unit`}
+      style={{
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 17 }}>{value}</Text>
+      <Text style={{ fontSize: 17 }}>{label}</Text>
+    </View>
+  );
 };

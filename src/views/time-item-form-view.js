@@ -2,7 +2,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BackHandler, Text, TextInput, View } from "react-native";
 import { Button } from "../button";
-import { newDefaultTimeItem, newTimeItem } from "../new-time-item";
+import { newDefaultTimeItem, newTimeItem } from "../time-item-utils";
 import { TimeItem } from "../time-item";
 
 export const TimeItemFormView = ({

@@ -1,15 +1,23 @@
+import isEmpty from "lodash/isEmpty";
 import uniqueId from "lodash/uniqueId";
 import { useCallback, useEffect, useState } from "react";
 import { timeItemsRepository } from "../async-storage";
+import { newTimeItem, updateTimeItem } from "../time-item-utils";
 
 export const useTimeItems = () => {
+  const [hasLoadedCache, setHasLoadedCache] = useState(false);
   const [timeItems, setTimeItems] = useState([]);
 
   useEffect(() => {
     timeItemsRepository.load().then((loadedItems) => {
-      if (loadedItems) setTimeItems(loadedItems);
+      if (!isEmpty(loadedItems)) setTimeItems(loadedItems.map(newTimeItem));
+      setHasLoadedCache(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (hasLoadedCache) timeItemsRepository.save(timeItems);
+  }, [timeItems, hasLoadedCache]);
 
   return {
     timeItems,
@@ -17,11 +25,10 @@ export const useTimeItems = () => {
       (newItem) =>
         setTimeItems((previousItems) => [
           ...previousItems,
-          {
-            id: uniqueId(),
+          newTimeItem({
             title: newItem.title,
             startTime: newItem.startTime,
-          },
+          }),
         ]),
       []
     ),
@@ -39,11 +46,10 @@ export const useTimeItems = () => {
           const itemIndex = newItems.findIndex(
             ({ id }) => id !== updatedItem.id
           );
-          newItems[itemIndex] = {
-            ...newItems[itemIndex],
+          newItems[itemIndex] = updateTimeItem(newItems[itemIndex], {
             title: updatedItem.title,
             startTime: updatedItem.startTime,
-          };
+          });
           return newItems;
         }),
       []

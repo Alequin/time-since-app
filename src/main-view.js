@@ -42,8 +42,7 @@ export const MainView = () => {
         <TimeItemFormView
           testID="new-time-item-view"
           currentTime={currentTime}
-          onSubmit={async (item) => {
-            await timeItemsRepository.save(item);
+          onSubmit={(item) => {
             addTimeItem(item);
             toHomeView();
           }}

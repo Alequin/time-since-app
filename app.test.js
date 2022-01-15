@@ -12,7 +12,8 @@ import React from "react";
 import { App } from "./App";
 import * as asyncStorage from "./src/async-storage";
 import * as useCurrentTime from "./src/hooks/use-current-time";
-import { newTimeItem } from "./src/new-time-item";
+import { newTimeItem } from "./src/time-item-utils";
+import { TimeItem } from "./src/time-item";
 import {
   asyncPressEvent,
   asyncRender,
@@ -63,8 +64,62 @@ describe("App", () => {
       expect(within(timeItems[0]).queryByText("4"));
     });
 
+    it("displays the expected time on the home page time item when one is loaded", async () => {
+      const fourDaysAgo = newDateShiftedBy({
+        date: -4,
+        hours: -5,
+        minutes: -6,
+      });
+      jest
+        .spyOn(asyncStorage.timeItemsRepository, "load")
+        .mockImplementation(async () => [
+          newTimeItem({
+            title: "Loaded event",
+            startTime: fourDaysAgo,
+          }),
+        ]);
+
+      const screen = await asyncRender(<App />);
+
+      // Start on the home view
+      expect(screen.queryByTestId("home-view")).toBeTruthy();
+
+      // confirm the time item repository was read
+      expect(asyncStorage.timeItemsRepository.load).toHaveBeenCalledTimes(1);
+
+      // confirm the stored time item is visible
+      const timeItems = screen.queryAllByTestId("time-item");
+      expect(timeItems).toHaveLength(1);
+
+      const withinTimeItem = within(timeItems[0]);
+      // Shows the item title
+      expect(withinTimeItem.queryByText("Loaded event")).toBeTruthy();
+
+      expect(
+        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("4")
+      ).toBeTruthy();
+      expect(
+        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("Days")
+      ).toBeTruthy();
+
+      expect(
+        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("5")
+      ).toBeTruthy();
+      expect(
+        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("Hours")
+      ).toBeTruthy();
+
+      expect(
+        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText("6")
+      ).toBeTruthy();
+      expect(
+        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText(
+          "Minutes"
+        )
+      ).toBeTruthy();
+    });
+
     it("loads stored time items but displays non if there are non saved", async () => {
-      const fourDaysAgo = newDateShiftedBy({ date: -4 });
       jest
         .spyOn(asyncStorage.timeItemsRepository, "load")
         .mockImplementation(async () => null); // No saved time items
@@ -77,7 +132,7 @@ describe("App", () => {
       // confirm the time item repository was read
       expect(asyncStorage.timeItemsRepository.load).toHaveBeenCalledTimes(1);
 
-      // confirm the stored time item is visible
+      // confirm no stored time items are visible
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(0);
     });
@@ -202,8 +257,7 @@ describe("App", () => {
       // choose a custom time
       await asyncPressEvent(getButtonByText(screen, "Change Time"));
 
-      const fiveMinutesAgo = new Date();
-      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+      const fiveMinutesAgo = newDateShiftedBy({ minutes: -5 });
       await act(async () =>
         capturedTimePickerOnChange({
           nativeEvent: { timestamp: fiveMinutesAgo },
@@ -217,7 +271,16 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
-      expect(within(timeItems[0]).queryByText("00:05")).toBeTruthy();
+      const withinTimeItem = within(timeItems[0]);
+      expect(
+        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("0")
+      ).toBeTruthy();
+      expect(
+        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("0")
+      ).toBeTruthy();
+      expect(
+        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText("5")
+      ).toBeTruthy();
     });
 
     it("allows the user to reset to the default time while making a time item", async () => {
@@ -260,7 +323,17 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
-      expect(within(timeItems[0]).queryByText("00:00")).toBeTruthy();
+
+      const withinTimeItem = within(timeItems[0]);
+      expect(
+        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("0")
+      ).toBeTruthy();
+      expect(
+        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("0")
+      ).toBeTruthy();
+      expect(
+        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText("0")
+      ).toBeTruthy();
     });
 
     it("adds the new time item into storage when it is created", async () => {
@@ -276,16 +349,21 @@ describe("App", () => {
       // See the new-time-item view
       expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
 
+      // Reset save cache mock to ensure the call count is correct
+      asyncStorage.timeItemsRepository.save.mockClear();
+
       // Press the submit button
       await asyncPressEvent(getButtonByText(screen, "Submit"));
 
       // Confirm a new time item was saved in storage
       expect(asyncStorage.timeItemsRepository.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.timeItemsRepository.save).toHaveBeenCalledWith({
-        id: expect.any(Number),
-        title: "New Event",
-        startTime: expect.any(Date),
-      });
+      expect(asyncStorage.timeItemsRepository.save).toHaveBeenCalledWith([
+        {
+          id: expect.any(Number),
+          title: "New Event",
+          startTime: expect.any(Date),
+        },
+      ]);
     });
 
     it("allows the user to add multiple time items", async () => {
@@ -355,8 +433,13 @@ describe("App", () => {
       // Confirm a default time item is visible
       const initialTimeItem = screen.queryByTestId("time-item");
       expect(within(initialTimeItem).queryByText("New Event")).toBeTruthy();
-      expect(within(initialTimeItem).queryByText("Total Days: 0")).toBeTruthy();
-      expect(within(initialTimeItem).queryByText("00:00")).toBeTruthy();
+
+      const withinInitialTimeItem = within(initialTimeItem);
+      expect(
+        within(withinInitialTimeItem.queryByTestId("Minutes-unit")).queryByText(
+          "0"
+        )
+      ).toBeTruthy();
 
       // Update the title
       const expectedTitle = "Last visit to the shop";
@@ -377,19 +460,20 @@ describe("App", () => {
       // update the time
       await asyncPressEvent(getButtonByText(screen, "Change Time"));
 
-      const fiveMinutesAgo = new Date();
-      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
       await act(async () =>
         capturedTimePickerOnChange({
-          nativeEvent: { timestamp: fiveMinutesAgo },
+          nativeEvent: { timestamp: newDateShiftedBy({ minutes: -5 }) },
         })
       );
 
       // confirm the template time item has updated
       const updatedTimeItem = screen.queryByTestId("time-item");
       expect(within(updatedTimeItem).queryByText(expectedTitle)).toBeTruthy();
-      expect(within(updatedTimeItem).queryByText("Total Days: 4")).toBeTruthy();
-      expect(within(updatedTimeItem).queryByText("00:05")).toBeTruthy();
+      expect(
+        within(
+          within(updatedTimeItem).queryByTestId("Minutes-unit")
+        ).queryByText("5")
+      ).toBeTruthy();
     });
   });
 
@@ -408,13 +492,22 @@ describe("App", () => {
       expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
       await asyncPressEvent(getButtonByText(screen, "Submit"));
 
-      // confirm there is a time item
+      // confirm the value of the first time item
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const firstTimeItems = screen.queryAllByTestId("time-item");
       expect(firstTimeItems).toHaveLength(1);
-      const [firstTimeString] = within(firstTimeItems[0]).queryByTestId(
-        "time-item-time-string"
-      ).children;
+      const withinFirstTimeItem = within(firstTimeItems[0]);
+      expect(
+        within(withinFirstTimeItem.queryByTestId("Days-unit")).queryByText("0")
+      ).toBeTruthy();
+      expect(
+        within(withinFirstTimeItem.queryByTestId("Hours-unit")).queryByText("0")
+      ).toBeTruthy();
+      expect(
+        within(withinFirstTimeItem.queryByTestId("Minutes-unit")).queryByText(
+          "0"
+        )
+      ).toBeTruthy();
 
       // press the time items edit button
       await asyncPressEvent(
@@ -425,23 +518,23 @@ describe("App", () => {
       expect(screen.queryByTestId("update-time-item-view")).toBeTruthy();
       await asyncPressEvent(getButtonByText(screen, "Change Time"));
 
-      const tenMinutesAgo = new Date();
-      tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
       await act(async () =>
         capturedTimePickerOnChange({
-          nativeEvent: { timestamp: tenMinutesAgo },
+          nativeEvent: { timestamp: newDateShiftedBy({ minutes: -10 }) },
         })
       );
       await asyncPressEvent(getButtonByText(screen, "Submit"));
 
-      // Confirm the updated time string is different from the original
+      // Confirm the updated time is different from the original
       const secondTimeItems = screen.queryAllByTestId("time-item");
       expect(secondTimeItems).toHaveLength(1);
-      const [secondTimeString] = within(secondTimeItems[0]).queryByTestId(
-        "time-item-time-string"
-      ).children;
 
-      expect(firstTimeString).not.toBe(secondTimeString);
+      const withinSecondTimeItem = within(secondTimeItems[0]);
+      expect(
+        within(withinSecondTimeItem.queryByTestId("Minutes-unit")).queryByText(
+          "10"
+        )
+      ).toBeTruthy();
     });
 
     it("shows a template time item using the values from the time item to edit", async () => {
@@ -477,9 +570,10 @@ describe("App", () => {
   });
 });
 
-const newDateShiftedBy = ({ date, minutes }) => {
+const newDateShiftedBy = ({ date, hours, minutes }) => {
   const newDate = new Date();
   if (date) newDate.setDate(newDate.getDate() + date);
-  if (minutes) fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() + minutes);
+  if (hours) newDate.setHours(newDate.getHours() + hours);
+  if (minutes) newDate.setMinutes(newDate.getMinutes() + minutes);
   return newDate;
 };

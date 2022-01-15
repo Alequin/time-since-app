@@ -4,7 +4,7 @@ export const newTimeItem = (options) => {
   const newItem = {
     id: randomId(),
     title: options.title,
-    startTime: options.startTime,
+    startTime: new Date(options.startTime),
   };
 
   assert(Boolean(newItem.title), "Time item requires a title property");
@@ -14,11 +14,18 @@ export const newTimeItem = (options) => {
     "Time item property startTime must be a date object"
   );
 
-  return newItem;
+  return Object.freeze(newItem);
 };
 
 export const newDefaultTimeItem = () =>
   newTimeItem({ title: "New Event", startTime: new Date() });
+
+export const updateTimeItem = (previousItem, newItemOptions) => {
+  return Object.freeze({
+    ...newTimeItem(newItemOptions),
+    id: previousItem.id,
+  });
+};
 
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);
