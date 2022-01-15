@@ -111,31 +111,29 @@ const useDateTimePickerState = (initialStartTime) => {
     showDatePicker: () => setIsDatePickerVisible(true),
     showTimePicker: () => setIsTimePickerVisible(true),
     resetTime: () => setStartTime(new Date()),
-    setDateWithDateTimePicker: useCallback(
-      ({ nativeEvent: { timestamp: selectedDate } }) => {
-        setStartTime((previousStartDate) => {
-          const newStartDate = new Date(previousStartDate);
-          newStartDate.setFullYear(selectedDate.getFullYear());
-          newStartDate.setMonth(selectedDate.getMonth());
-          newStartDate.setDate(selectedDate.getDate());
-          return newStartDate;
-        });
-        setIsDatePickerVisible(false);
-      },
-      []
-    ),
-    setTimeWithDateTimePicker: useCallback(
-      ({ nativeEvent: { timestamp: selectedTime } }) => {
-        setStartTime((previousStartTime) => {
-          const newStartTime = new Date(previousStartTime);
-          newStartTime.setHours(selectedTime.getHours());
-          newStartTime.setMinutes(selectedTime.getMinutes());
-          newStartTime.setSeconds(selectedTime.getSeconds());
-          return newStartTime;
-        });
-        setIsTimePickerVisible(false);
-      },
-      []
-    ),
+    setDateWithDateTimePicker: useCallback(({ selectedDate }) => {
+      setIsDatePickerVisible(false);
+
+      if (!selectedDate) return;
+      setStartTime((previousStartDate) => {
+        const newStartDate = new Date(previousStartDate);
+        newStartDate.setFullYear(selectedDate.getFullYear());
+        newStartDate.setMonth(selectedDate.getMonth());
+        newStartDate.setDate(selectedDate.getDate());
+        return newStartDate;
+      });
+    }, []),
+    setTimeWithDateTimePicker: useCallback(({ selectedDate, ...fooo }) => {
+      setIsTimePickerVisible(false);
+
+      if (!selectedDate) return;
+      setStartTime((previousStartTime) => {
+        const newStartTime = new Date(previousStartTime);
+        newStartTime.setHours(selectedDate.getHours());
+        newStartTime.setMinutes(selectedDate.getMinutes());
+        newStartTime.setSeconds(selectedDate.getSeconds());
+        return newStartTime;
+      });
+    }, []),
   };
 };

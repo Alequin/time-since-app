@@ -32,7 +32,11 @@ const DateTimePickerModal = ({ isOpen, value, onChange, testID, mode }) => {
         <DateTimePicker
           testID={testID}
           value={value}
-          onChange={onChange}
+          onChange={({ nativeEvent }) =>
+            onChange({
+              selectedDate: nativeEvent?.timestamp,
+            })
+          }
           mode={mode}
         />
       ),
