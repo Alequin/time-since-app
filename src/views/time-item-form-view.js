@@ -1,9 +1,13 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
+import ReactNativeDateTimePicker from "@react-native-community/datetimepicker";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BackHandler, Text, TextInput, View } from "react-native";
 import { Button } from "../button";
 import { newDefaultTimeItem, newTimeItem } from "../time-item-utils";
 import { TimeItem } from "../time-item";
+import {
+  DatePickerModal,
+  TimePickerModal,
+} from "./components/date-time-picker-modal";
 
 export const TimeItemFormView = ({
   testID,
@@ -50,7 +54,7 @@ export const TimeItemFormView = ({
         value={title}
         onChangeText={setTitle}
       />
-      <Text>{`${startTime}`}</Text>
+      <Text>{startTime.toString()}</Text>
       <Button
         style={{ padding: 10, backgroundColor: "cyan", margin: 5 }}
         onPress={showDatePicker}
@@ -63,12 +67,12 @@ export const TimeItemFormView = ({
       >
         <Text>Change Time</Text>
       </Button>
-      <DatePicker
+      <DatePickerModal
         value={startTime}
         isOpen={isDatePickerVisible}
         onChange={setDateWithDateTimePicker}
       />
-      <TimePicker
+      <TimePickerModal
         value={startTime}
         isOpen={isTimePickerVisible}
         onChange={setTimeWithDateTimePicker}
@@ -92,38 +96,6 @@ export const TimeItemFormView = ({
         <Text>Go back</Text>
       </Button>
     </View>
-  );
-};
-
-const DatePicker = ({ isOpen, value, onChange }) => {
-  return useMemo(
-    () =>
-      isOpen && (
-        <DateTimePicker
-          testID="date-picker"
-          value={value}
-          onChange={onChange}
-          mode="date"
-          display="default"
-        />
-      ),
-    [isOpen, value, onChange]
-  );
-};
-
-const TimePicker = ({ isOpen, value, onChange }) => {
-  return useMemo(
-    () =>
-      isOpen && (
-        <DateTimePicker
-          testID="time-picker"
-          value={value}
-          onChange={onChange}
-          mode="time"
-          display="default"
-        />
-      ),
-    [isOpen, value, onChange]
   );
 };
 
