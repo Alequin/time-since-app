@@ -91,32 +91,14 @@ describe("App", () => {
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
 
-      const withinTimeItem = within(timeItems[0]);
-      // Shows the item title
-      expect(withinTimeItem.queryByText("Loaded event")).toBeTruthy();
-
-      expect(
-        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("4")
-      ).toBeTruthy();
-      expect(
-        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("Days")
-      ).toBeTruthy();
-
-      expect(
-        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("5")
-      ).toBeTruthy();
-      expect(
-        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("Hours")
-      ).toBeTruthy();
-
-      expect(
-        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText("6")
-      ).toBeTruthy();
-      expect(
-        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText(
-          "Minutes"
-        )
-      ).toBeTruthy();
+      // Shows the expected time item
+      expectTimeItemContents({
+        timeItem: timeItems[0],
+        title: "Loaded event",
+        days: "4",
+        hours: "5",
+        minutes: "6",
+      });
     });
 
     it("loads stored time items but displays non if there are non saved", async () => {
@@ -271,16 +253,14 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
-      const withinTimeItem = within(timeItems[0]);
-      expect(
-        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("0")
-      ).toBeTruthy();
-      expect(
-        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("0")
-      ).toBeTruthy();
-      expect(
-        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText("5")
-      ).toBeTruthy();
+
+      expectTimeItemContents({
+        timeItem: timeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "5",
+      });
     });
 
     it("allows the user to reset to the default time while making a time item", async () => {
@@ -305,11 +285,9 @@ describe("App", () => {
       // choose a custom time
       await asyncPressEvent(getButtonByText(screen, "Change Time"));
 
-      const fiveMinutesAgo = new Date();
-      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
       await act(async () =>
         capturedTimePickerOnChange({
-          nativeEvent: { timestamp: fiveMinutesAgo },
+          nativeEvent: { timestamp: newDateShiftedBy({ minutes: -5 }) },
         })
       );
 
@@ -324,16 +302,13 @@ describe("App", () => {
       const timeItems = screen.queryAllByTestId("time-item");
       expect(timeItems).toHaveLength(1);
 
-      const withinTimeItem = within(timeItems[0]);
-      expect(
-        within(withinTimeItem.queryByTestId("Days-unit")).queryByText("0")
-      ).toBeTruthy();
-      expect(
-        within(withinTimeItem.queryByTestId("Hours-unit")).queryByText("0")
-      ).toBeTruthy();
-      expect(
-        within(withinTimeItem.queryByTestId("Minutes-unit")).queryByText("0")
-      ).toBeTruthy();
+      expectTimeItemContents({
+        timeItem: timeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "0",
+      });
     });
 
     it("adds the new time item into storage when it is created", async () => {
@@ -431,15 +406,13 @@ describe("App", () => {
       expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
 
       // Confirm a default time item is visible
-      const initialTimeItem = screen.queryByTestId("time-item");
-      expect(within(initialTimeItem).queryByText("New Event")).toBeTruthy();
-
-      const withinInitialTimeItem = within(initialTimeItem);
-      expect(
-        within(withinInitialTimeItem.queryByTestId("Minutes-unit")).queryByText(
-          "0"
-        )
-      ).toBeTruthy();
+      expectTimeItemContents({
+        timeItem: screen.queryByTestId("time-item"),
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "0",
+      });
 
       // Update the title
       const expectedTitle = "Last visit to the shop";
@@ -449,11 +422,9 @@ describe("App", () => {
       // Update the date
       await asyncPressEvent(getButtonByText(screen, "Change Date"));
 
-      const fourDaysAgo = new Date();
-      fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
       await act(async () =>
         capturedDatePickerOnChange({
-          nativeEvent: { timestamp: fourDaysAgo },
+          nativeEvent: { timestamp: newDateShiftedBy({ date: -4 }) },
         })
       );
 
@@ -465,15 +436,16 @@ describe("App", () => {
           nativeEvent: { timestamp: newDateShiftedBy({ minutes: -5 }) },
         })
       );
+      await asyncPressEvent(getButtonByText(screen, "Submit"));
 
       // confirm the template time item has updated
-      const updatedTimeItem = screen.queryByTestId("time-item");
-      expect(within(updatedTimeItem).queryByText(expectedTitle)).toBeTruthy();
-      expect(
-        within(
-          within(updatedTimeItem).queryByTestId("Minutes-unit")
-        ).queryByText("5")
-      ).toBeTruthy();
+      expectTimeItemContents({
+        timeItem: screen.queryByTestId("time-item"),
+        title: expectedTitle,
+        days: "4",
+        hours: "0",
+        minutes: "5",
+      });
     });
   });
 
@@ -496,18 +468,13 @@ describe("App", () => {
       expect(screen.queryByTestId("home-view")).toBeTruthy();
       const firstTimeItems = screen.queryAllByTestId("time-item");
       expect(firstTimeItems).toHaveLength(1);
-      const withinFirstTimeItem = within(firstTimeItems[0]);
-      expect(
-        within(withinFirstTimeItem.queryByTestId("Days-unit")).queryByText("0")
-      ).toBeTruthy();
-      expect(
-        within(withinFirstTimeItem.queryByTestId("Hours-unit")).queryByText("0")
-      ).toBeTruthy();
-      expect(
-        within(withinFirstTimeItem.queryByTestId("Minutes-unit")).queryByText(
-          "0"
-        )
-      ).toBeTruthy();
+      expectTimeItemContents({
+        timeItem: firstTimeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "0",
+      });
 
       // press the time items edit button
       await asyncPressEvent(
@@ -529,12 +496,13 @@ describe("App", () => {
       const secondTimeItems = screen.queryAllByTestId("time-item");
       expect(secondTimeItems).toHaveLength(1);
 
-      const withinSecondTimeItem = within(secondTimeItems[0]);
-      expect(
-        within(withinSecondTimeItem.queryByTestId("Minutes-unit")).queryByText(
-          "10"
-        )
-      ).toBeTruthy();
+      expectTimeItemContents({
+        timeItem: secondTimeItems[0],
+        title: "New Event",
+        days: "0",
+        hours: "0",
+        minutes: "10",
+      });
     });
 
     it("shows a template time item using the values from the time item to edit", async () => {
@@ -576,4 +544,55 @@ const newDateShiftedBy = ({ date, hours, minutes }) => {
   if (hours) newDate.setHours(newDate.getHours() + hours);
   if (minutes) newDate.setMinutes(newDate.getMinutes() + minutes);
   return newDate;
+};
+
+const expectTimeItemContents = ({ timeItem, title, days, hours, minutes }) => {
+  expect(title).toBeTruthy();
+  try {
+    expect(within(timeItem).queryByText(title)).toBeTruthy();
+  } catch (error) {
+    throw new Error(
+      `The expected title on the time item was not found / Expected title: ${title}`
+    );
+  }
+
+  expect(days).toBeTruthy();
+  expect(hours).toBeTruthy();
+  expect(minutes).toBeTruthy();
+
+  expectTimeUnitInTimeItem({
+    timeItem,
+    unitId: "Days-unit",
+    value: days,
+    label: "Days",
+  });
+
+  expectTimeUnitInTimeItem({
+    timeItem,
+    unitId: "Hours-unit",
+    value: hours,
+    label: "Hours",
+  });
+
+  expectTimeUnitInTimeItem({
+    timeItem,
+    unitId: "Minutes-unit",
+    value: minutes,
+    label: "Minutes",
+  });
+};
+
+const expectTimeUnitInTimeItem = ({ timeItem, unitId, value, label }) => {
+  try {
+    expect(
+      within(within(timeItem).queryByTestId(unitId)).queryByText(label)
+    ).toBeTruthy();
+    expect(
+      within(within(timeItem).queryByTestId(unitId)).queryByText(value)
+    ).toBeTruthy();
+  } catch (error) {
+    throw new Error(
+      `A time item unit was not the expected value / Label: ${label}, Expected value: ${value}`
+    );
+  }
 };
