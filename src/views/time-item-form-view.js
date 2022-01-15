@@ -2,7 +2,11 @@ import ReactNativeDateTimePicker from "@react-native-community/datetimepicker";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BackHandler, Text, TextInput, View } from "react-native";
 import { Button } from "../button";
-import { newDefaultTimeItem, newTimeItem } from "../time-item-utils";
+import {
+  newDefaultTimeItem,
+  newTimeItem,
+  updateTimeItem,
+} from "../time-item-utils";
 import { TimeItem } from "../time-item";
 import {
   DatePickerModal,
@@ -41,10 +45,10 @@ export const TimeItemFormView = ({
   } = useDateTimePickerState(initialTimeItem.startTime);
 
   const timeItem = useMemo(
-    () => newTimeItem({ title: title || "Unnamed", startTime }),
+    () =>
+      updateTimeItem(initialTimeItem, { title: title || "Unnamed", startTime }),
     [title, startTime]
   );
-
   return (
     <View testID={testID} style={{ flex: 1, width: "100%" }}>
       <TimeItem item={timeItem} currentTime={currentTime} />
@@ -52,7 +56,7 @@ export const TimeItemFormView = ({
         style={{ width: "50%", height: 40, backgroundColor: "white" }}
         placeholder="Title"
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(title) => setTitle(title)}
       />
       <Text>{startTime.toString()}</Text>
       <Button
@@ -123,7 +127,7 @@ const useDateTimePickerState = (initialStartTime) => {
         return newStartDate;
       });
     }, []),
-    setTimeWithDateTimePicker: useCallback(({ selectedDate, ...fooo }) => {
+    setTimeWithDateTimePicker: useCallback(({ selectedDate }) => {
       setIsTimePickerVisible(false);
 
       if (!selectedDate) return;

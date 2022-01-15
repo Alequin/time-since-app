@@ -44,7 +44,7 @@ export const useTimeItems = () => {
         setTimeItems((previousItems) => {
           const newItems = [...previousItems];
           const itemIndex = newItems.findIndex(
-            ({ id }) => id !== updatedItem.id
+            ({ id }) => id === updatedItem.id
           );
           newItems[itemIndex] = updateTimeItem(newItems[itemIndex], {
             title: updatedItem.title,
