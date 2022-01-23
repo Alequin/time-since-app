@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BackHandler, Text, TextInput, View } from "react-native";
-import { ShadowButton } from "../button";
+import { Button, ShadowButton } from "../button";
 import { wildBlueYonder } from "../colours";
 import { dateToDisplayFormat } from "../date-to-dispay-format";
 import { Icon } from "../icons";
@@ -47,10 +47,6 @@ export const TimeItemFormView = ({
     setTimeWithDateTimePicker,
   } = useDateTimePickerState(timeItemToEdit?.startTime);
 
-  const isResetButtonDisabled = Boolean(
-    baseTimeItem.title === title && hasTimeBeenReset
-  );
-
   const timeItem = useMemo(
     () =>
       updateTimeItem(baseTimeItem, { title: title || "Unnamed", startTime }),
@@ -69,14 +65,17 @@ export const TimeItemFormView = ({
           padding: 5,
         }}
       >
-        <TitleInput value={title} onChange={(title) => setTitle(title)} />
+        <TitleInput
+          value={title}
+          onChange={(title) => setTitle(title)}
+          onClearValue={() => setTitle("")}
+        />
         <StartTimeDisplay startTime={startTime} />
       </View>
       <FormButtons
         onPressChangeDate={showDatePicker}
         onPressChangeTime={showTimePicker}
-        isResetButtonDisabled={isResetButtonDisabled}
-        onSubmit={() => onSubmit(timeItem)}
+        onSubmit={title ? () => onSubmit(timeItem) : undefined}
         onPressBack={onPressBack}
         onPressReset={() => {
           resetTime();
@@ -99,29 +98,20 @@ export const TimeItemFormView = ({
 
 const useDateTimePickerState = (initialStartTime) => {
   const [startTime, setStartTime] = useState(initialStartTime || new Date());
-  const [hasTimeBeenReset, setHasTimeBeenReset] = useState(
-    initialStartTime || new Date()
-  );
-
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
 
   return {
     startTime,
-    hasTimeBeenReset,
     isDatePickerVisible,
     isTimePickerVisible,
     showDatePicker: () => setIsDatePickerVisible(true),
     showTimePicker: () => setIsTimePickerVisible(true),
-    resetTime: () => {
-      setStartTime(initialStartTime || new Date());
-      setHasTimeBeenReset(true);
-    },
+    resetTime: () => setStartTime(initialStartTime || new Date()),
     setDateWithDateTimePicker: useCallback(({ selectedDate }) => {
       setIsDatePickerVisible(false);
 
       if (!selectedDate) return;
-      setHasTimeBeenReset(false);
       setStartTime((previousStartDate) => {
         const newStartDate = new Date(previousStartDate);
         newStartDate.setFullYear(selectedDate.getFullYear());
@@ -134,7 +124,6 @@ const useDateTimePickerState = (initialStartTime) => {
       setIsTimePickerVisible(false);
 
       if (!selectedDate) return;
-      setHasTimeBeenReset(false);
       setStartTime((previousStartTime) => {
         const newStartTime = new Date(previousStartTime);
         newStartTime.setHours(selectedDate.getHours());
@@ -146,20 +135,34 @@ const useDateTimePickerState = (initialStartTime) => {
   };
 };
 
-const TitleInput = ({ value, onChange }) => {
+const TitleInput = ({ value, onChange, onClearValue }) => {
   return (
-    <TextInput
+    <View
       style={{
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        alignItems: "center",
         height: 40,
         width: "100%",
         backgroundColor: "white",
-        textAlign: "center",
         marginBottom: 10,
       }}
-      placeholder="Title"
-      value={value}
-      onChangeText={onChange}
-    />
+    >
+      <TextInput
+        style={{
+          height: "100%",
+          width: "80%",
+          backgroundColor: "white",
+          textAlign: "center",
+        }}
+        placeholder="Title"
+        value={value}
+        onChangeText={onChange}
+      />
+      <Button style={{ width: "10%" }} onPress={onClearValue}>
+        <Icon name="cross" size={22} />
+      </Button>
+    </View>
   );
 };
 
@@ -184,7 +187,6 @@ const StartTimeDisplay = ({ startTime }) => {
 const FormButtons = ({
   onPressChangeDate,
   onPressChangeTime,
-  isResetButtonDisabled,
   onSubmit,
   onPressBack,
   onPressReset,
@@ -219,12 +221,17 @@ const FormButtons = ({
           }}
         >
           <FormButton
-            disabled={isResetButtonDisabled}
+            disabled={!onPressReset}
             onPress={onPressReset}
             iconName="undo"
             text="Reset"
           />
-          <FormButton onPress={onSubmit} iconName="check" text="Submit" />
+          <FormButton
+            disabled={!onSubmit}
+            onPress={onSubmit}
+            iconName="check"
+            text="Submit"
+          />
         </View>
       </View>
       <FormButton

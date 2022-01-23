@@ -7,7 +7,7 @@ export const expectTimeItemContents = ({
   hours,
   minutes,
 }) => {
-  expect(title).toBeTruthy();
+  expect(title).toEqual(expect.any(String));
   try {
     expect(within(timeItem).queryByText(title)).toBeTruthy();
   } catch (error) {

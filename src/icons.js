@@ -42,6 +42,7 @@ const ICON_OPTIONS = {
   back: customIcon(Ionicons, "arrow-back"),
   undo: customIcon(FontAwesome, "undo"),
   check: customIcon(Entypo, "check"),
+  cross: customIcon(Entypo, "cross"),
 };
 
 const TestIdElement = (props) => <View {...props} />;

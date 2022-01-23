@@ -260,64 +260,6 @@ describe("App - time item form", () => {
     });
   });
 
-  it("disables the reset button if there is nothing to reset", async () => {
-    let capturedTimePickerOnChange = null;
-    DateTimePicker.mockImplementation(({ testID, onChange }) => {
-      if (testID === "time-picker") capturedTimePickerOnChange = onChange;
-      return null;
-    });
-
-    const screen = await asyncRender(<App />);
-
-    // Press the button to create a new time item
-    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
-
-    // See the new-time-item view
-    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
-
-    // Confirm the reset button is disabled
-    expect(buttonProps(getButtonByText(screen, "Reset"))?.disabled).toBe(true);
-  });
-
-  it("disables the reset button after reseting the time on a new time item", async () => {
-    let capturedTimePickerOnChange = null;
-    DateTimePicker.mockImplementation(({ testID, onChange }) => {
-      if (testID === "time-picker") capturedTimePickerOnChange = onChange;
-      return null;
-    });
-
-    const screen = await asyncRender(<App />);
-
-    // Start on the home view with no time items
-    expect(screen.queryByTestId("home-view")).toBeTruthy();
-
-    // Press the button to create a new time item
-    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
-
-    // See the new-time-item view
-    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
-
-    // choose a custom time
-    await asyncPressEvent(getButtonByText(screen, "Change Time"));
-
-    await act(async () =>
-      capturedTimePickerOnChange({
-        nativeEvent: {
-          timestamp: newDateShiftedBy({
-            hours: -5,
-            seconds: -30, // offset to stop flakyness due to seconds
-          }),
-        },
-      })
-    );
-
-    // reset to the default
-    await asyncPressEvent(getButtonByText(screen, "Reset"));
-
-    // Confirm the reset button is disabled
-    expect(buttonProps(getButtonByText(screen, "Reset"))?.disabled).toBe(true);
-  });
-
   it("displays a template time item while on the new-time-item page", async () => {
     const screen = await asyncRender(<App />);
 
@@ -486,5 +428,62 @@ describe("App - time item form", () => {
       hours: "0",
       minutes: "0",
     });
+  });
+
+  it("clears the title when the clear button in the title input is pressed", async () => {
+    const screen = await asyncRender(<App />);
+
+    // Start on the home view with no time items
+    expect(screen.queryByTestId("home-view")).toBeTruthy();
+
+    // Press the button to create a new time item
+    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+
+    // See the new-time-item view
+    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+    // confirm the current title value
+    expect(screen.queryByPlaceholderText("Title").props.value).toBe(
+      "New Event"
+    );
+    expectTimeItemContents({
+      timeItem: screen.queryByTestId("time-item"),
+      title: "New Event",
+      days: "0",
+      hours: "0",
+      minutes: "0",
+    });
+
+    // clear the title with the clear button
+    await asyncPressEvent(getButtonByChildTestId(screen, "crossIcon"));
+
+    // confirm the title was cleared
+    expect(screen.queryByPlaceholderText("Title").props.value).toBe("");
+    expectTimeItemContents({
+      timeItem: screen.queryByTestId("time-item"),
+      title: "Unnamed",
+      days: "0",
+      hours: "0",
+      minutes: "0",
+    });
+  });
+
+  it("disables the submit button when no title has been provided", async () => {
+    const screen = await asyncRender(<App />);
+
+    // Start on the home view with no time items
+    expect(screen.queryByTestId("home-view")).toBeTruthy();
+
+    // Press the button to create a new time item
+    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+
+    // See the new-time-item view
+    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+    // remove the title by clearing it
+    await asyncPressEvent(getButtonByChildTestId(screen, "crossIcon"));
+
+    // confirm the submit button is disabled
+    expect(buttonProps(getButtonByText(screen, "Submit"))?.disabled).toBe(true);
   });
 });
