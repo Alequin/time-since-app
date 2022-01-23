@@ -46,7 +46,7 @@ export const TimeItemFormView = ({
     setTimeWithDateTimePicker,
   } = useDateTimePickerState(timeItemToEdit?.startTime);
 
-  const shouldDisableResetButton = Boolean(
+  const isResetButtonDisabled = Boolean(
     baseTimeItem.title === title && hasTimeBeenReset
   );
 
@@ -89,57 +89,18 @@ export const TimeItemFormView = ({
             day: "numeric",
           })}
         </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-          }}
-        >
-          <View
-            style={{
-              width: "50%",
-            }}
-          >
-            <FormButton
-              onPress={showDatePicker}
-              iconName="calendar"
-              text="Change Date"
-            />
-            <FormButton
-              onPress={showTimePicker}
-              iconName="time"
-              text="Change Time"
-            />
-          </View>
-          <View
-            style={{
-              width: "50%",
-            }}
-          >
-            <FormButton
-              disabled={shouldDisableResetButton}
-              onPress={() => {
-                resetTime();
-                setTitle(baseTimeItem.title);
-              }}
-              iconName="undo"
-              text="Reset"
-            />
-            <FormButton
-              onPress={() => onSubmit(timeItem)}
-              iconName="time"
-              text="Submit"
-            />
-          </View>
-        </View>
-        <FormButton
-          style={{ width: 200 }}
-          onPress={onPressBack}
-          iconName="back"
-          text="Go back"
-        />
       </View>
-
+      <FormButtons
+        onPressChangeDate={showDatePicker}
+        onPressChangeTime={showTimePicker}
+        isResetButtonDisabled={isResetButtonDisabled}
+        onSubmit={() => onSubmit(timeItem)}
+        onPressBack={onPressBack}
+        onPressReset={() => {
+          resetTime();
+          setTitle(baseTimeItem.title);
+        }}
+      />
       <DatePickerModal
         value={startTime}
         isOpen={isDatePickerVisible}
@@ -201,6 +162,62 @@ const useDateTimePickerState = (initialStartTime) => {
       });
     }, []),
   };
+};
+
+const FormButtons = ({
+  onPressChangeDate,
+  onPressChangeTime,
+  isResetButtonDisabled,
+  onSubmit,
+  onPressBack,
+  onPressReset,
+}) => {
+  return (
+    <>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+        }}
+      >
+        <View
+          style={{
+            width: "50%",
+          }}
+        >
+          <FormButton
+            onPress={onPressChangeDate}
+            iconName="calendar"
+            text="Change Date"
+          />
+          <FormButton
+            onPress={onPressChangeTime}
+            iconName="time"
+            text="Change Time"
+          />
+        </View>
+        <View
+          style={{
+            width: "50%",
+          }}
+        >
+          <FormButton
+            disabled={isResetButtonDisabled}
+            onPress={onPressReset}
+            iconName="undo"
+            text="Reset"
+          />
+          <FormButton onPress={onSubmit} iconName="time" text="Submit" />
+        </View>
+      </View>
+      <FormButton
+        style={{ width: 200 }}
+        onPress={onPressBack}
+        iconName="back"
+        text="Go back"
+      />
+    </>
+  );
 };
 
 const FormButton = ({ onPress, iconName, style, text, disabled }) => {
