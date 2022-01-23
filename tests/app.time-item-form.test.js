@@ -15,6 +15,7 @@ import * as useCurrentTime from "../src/hooks/use-current-time";
 import {
   asyncPressEvent,
   asyncRender,
+  buttonProps,
   getButtonByChildTestId,
   getButtonByText,
 } from "./test-utils";
@@ -34,7 +35,7 @@ describe("App - time item form", () => {
       .mockImplementation(async () => []);
   });
 
-  it("allows the user to reset to the default time and title while making a time item", async () => {
+  it("allows the user to reset to the default time while making a time item", async () => {
     let capturedTimePickerOnChange = null;
     DateTimePicker.mockImplementation(({ testID, onChange }) => {
       if (testID === "time-picker") capturedTimePickerOnChange = onChange;
@@ -51,13 +52,6 @@ describe("App - time item form", () => {
 
     // See the new-time-item view
     expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
-
-    // choose a custom title
-    const expectedTitle = "Updated event title";
-    await fireEvent.changeText(
-      screen.queryByPlaceholderText("Title"),
-      expectedTitle
-    );
 
     // choose a custom time
     await asyncPressEvent(getButtonByText(screen, "Change Time"));
@@ -76,14 +70,14 @@ describe("App - time item form", () => {
     // confirm update happened
     expectTimeItemContents({
       timeItem: screen.queryByTestId("time-item"),
-      title: expectedTitle,
+      title: "New Event",
       days: "0",
       hours: "5",
       minutes: "0",
     });
 
     // reset to the default
-    await asyncPressEvent(getButtonByChildTestId(screen, "undoIcon"));
+    await asyncPressEvent(getButtonByText(screen, "Reset"));
 
     // Confirm the the time and title were reset
     expectTimeItemContents({
@@ -95,7 +89,48 @@ describe("App - time item form", () => {
     });
   });
 
-  it("allows the user to reset to the initial time and title while editing a time item", async () => {
+  it("allows the user to reset to the default title while making a time item", async () => {
+    const screen = await asyncRender(<App />);
+
+    // Start on the home view with no time items
+    expect(screen.queryByTestId("home-view")).toBeTruthy();
+
+    // Press the button to create a new time item
+    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+
+    // See the new-time-item view
+    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+    // choose a custom title
+    const expectedTitle = "Updated event title";
+    await fireEvent.changeText(
+      screen.queryByPlaceholderText("Title"),
+      expectedTitle
+    );
+
+    // confirm update happened
+    expectTimeItemContents({
+      timeItem: screen.queryByTestId("time-item"),
+      title: expectedTitle,
+      days: "0",
+      hours: "0",
+      minutes: "0",
+    });
+
+    // reset to the default
+    await asyncPressEvent(getButtonByText(screen, "Reset"));
+
+    // Confirm the the time and title were reset
+    expectTimeItemContents({
+      timeItem: screen.queryByTestId("time-item"),
+      title: "New Event",
+      days: "0",
+      hours: "0",
+      minutes: "0",
+    });
+  });
+
+  it("allows the user to reset to the initial time while editing a time item", async () => {
     jest
       .spyOn(asyncStorage.timeItemsRepository, "load")
       .mockImplementation(async () => [
@@ -130,13 +165,6 @@ describe("App - time item form", () => {
       getButtonByChildTestId(within(firstTimeItems[0]), "editIcon")
     );
 
-    // edit the title
-    const editedTitle = "Updated event title";
-    await fireEvent.changeText(
-      screen.queryByPlaceholderText("Title"),
-      editedTitle
-    );
-
     // edit the time
     expect(screen.queryByTestId("update-time-item-view")).toBeTruthy();
     await asyncPressEvent(getButtonByText(screen, "Change Time"));
@@ -155,14 +183,14 @@ describe("App - time item form", () => {
     // confirm the update happened
     expectTimeItemContents({
       timeItem: screen.queryByTestId("time-item"),
-      title: editedTitle,
+      title: "test",
       days: "4",
       hours: "0",
       minutes: "10",
     });
 
     // reset to the default
-    await asyncPressEvent(getButtonByChildTestId(screen, "undoIcon"));
+    await asyncPressEvent(getButtonByText(screen, "Reset"));
 
     // Confirm the the time and title were reset
     expectTimeItemContents({
@@ -174,7 +202,121 @@ describe("App - time item form", () => {
     });
   });
 
-  it.todo("disables the reset button if there is nothing to reset");
+  it("allows the user to reset to the initial title while editing a time item", async () => {
+    jest
+      .spyOn(asyncStorage.timeItemsRepository, "load")
+      .mockImplementation(async () => [
+        newTimeItem({
+          title: "test",
+          startTime: newDateShiftedBy({ date: -4 }),
+        }),
+      ]);
+
+    const screen = await asyncRender(<App />);
+
+    // confirm the value of the first time item
+    expect(screen.queryByTestId("home-view")).toBeTruthy();
+    const firstTimeItems = screen.queryAllByTestId("time-item");
+    expect(firstTimeItems).toHaveLength(1);
+    expectTimeItemContents({
+      timeItem: firstTimeItems[0],
+      title: "test",
+      days: "4",
+      hours: "0",
+      minutes: "0",
+    });
+
+    // press the time items edit button
+    await asyncPressEvent(
+      getButtonByChildTestId(within(firstTimeItems[0]), "editIcon")
+    );
+
+    // edit the title
+    const editedTitle = "Updated event title";
+    await fireEvent.changeText(
+      screen.queryByPlaceholderText("Title"),
+      editedTitle
+    );
+
+    // confirm the update happened
+    expectTimeItemContents({
+      timeItem: screen.queryByTestId("time-item"),
+      title: editedTitle,
+      days: "4",
+      hours: "0",
+      minutes: "0",
+    });
+
+    // reset to the default
+    await asyncPressEvent(getButtonByText(screen, "Reset"));
+
+    // Confirm the the time and title were reset
+    expectTimeItemContents({
+      timeItem: screen.queryByTestId("time-item"),
+      title: "test",
+      days: "4",
+      hours: "0",
+      minutes: "0",
+    });
+  });
+
+  it("disables the reset button if there is nothing to reset", async () => {
+    let capturedTimePickerOnChange = null;
+    DateTimePicker.mockImplementation(({ testID, onChange }) => {
+      if (testID === "time-picker") capturedTimePickerOnChange = onChange;
+      return null;
+    });
+
+    const screen = await asyncRender(<App />);
+
+    // Press the button to create a new time item
+    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+
+    // See the new-time-item view
+    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+    // Confirm the reset button is disabled
+    expect(buttonProps(getButtonByText(screen, "Reset"))?.disabled).toBe(true);
+  });
+
+  it("disables the reset button after reseting the time on a new time item", async () => {
+    let capturedTimePickerOnChange = null;
+    DateTimePicker.mockImplementation(({ testID, onChange }) => {
+      if (testID === "time-picker") capturedTimePickerOnChange = onChange;
+      return null;
+    });
+
+    const screen = await asyncRender(<App />);
+
+    // Start on the home view with no time items
+    expect(screen.queryByTestId("home-view")).toBeTruthy();
+
+    // Press the button to create a new time item
+    await asyncPressEvent(getButtonByChildTestId(screen, "plusIcon"));
+
+    // See the new-time-item view
+    expect(screen.queryByTestId("new-time-item-view")).toBeTruthy();
+
+    // choose a custom time
+    await asyncPressEvent(getButtonByText(screen, "Change Time"));
+
+    await act(async () =>
+      capturedTimePickerOnChange({
+        nativeEvent: {
+          timestamp: newDateShiftedBy({
+            hours: -5,
+            seconds: -30, // offset to stop flakyness due to seconds
+          }),
+        },
+      })
+    );
+
+    // reset to the default
+    await asyncPressEvent(getButtonByText(screen, "Reset"));
+
+    // Confirm the reset button is disabled
+    expect(buttonProps(getButtonByText(screen, "Reset"))?.disabled).toBe(true);
+  });
 
   it("displays a template time item while on the new-time-item page", async () => {
     const screen = await asyncRender(<App />);

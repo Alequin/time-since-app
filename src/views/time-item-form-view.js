@@ -36,6 +36,7 @@ export const TimeItemFormView = ({
 
   const {
     startTime,
+    hasTimeBeenReset,
     isDatePickerVisible,
     isTimePickerVisible,
     resetTime,
@@ -44,6 +45,10 @@ export const TimeItemFormView = ({
     setDateWithDateTimePicker,
     setTimeWithDateTimePicker,
   } = useDateTimePickerState(timeItemToEdit?.startTime);
+
+  const shouldDisableResetButton = Boolean(
+    baseTimeItem.title === title && hasTimeBeenReset
+  );
 
   const timeItem = useMemo(
     () =>
@@ -112,6 +117,7 @@ export const TimeItemFormView = ({
             }}
           >
             <FormButton
+              disabled={shouldDisableResetButton}
               onPress={() => {
                 resetTime();
                 setTitle(baseTimeItem.title);
@@ -150,20 +156,29 @@ export const TimeItemFormView = ({
 
 const useDateTimePickerState = (initialStartTime) => {
   const [startTime, setStartTime] = useState(initialStartTime || new Date());
+  const [hasTimeBeenReset, setHasTimeBeenReset] = useState(
+    initialStartTime || new Date()
+  );
+
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
 
   return {
     startTime,
+    hasTimeBeenReset,
     isDatePickerVisible,
     isTimePickerVisible,
     showDatePicker: () => setIsDatePickerVisible(true),
     showTimePicker: () => setIsTimePickerVisible(true),
-    resetTime: () => setStartTime(initialStartTime || new Date()),
+    resetTime: () => {
+      setStartTime(initialStartTime || new Date());
+      setHasTimeBeenReset(true);
+    },
     setDateWithDateTimePicker: useCallback(({ selectedDate }) => {
       setIsDatePickerVisible(false);
 
       if (!selectedDate) return;
+      setHasTimeBeenReset(false);
       setStartTime((previousStartDate) => {
         const newStartDate = new Date(previousStartDate);
         newStartDate.setFullYear(selectedDate.getFullYear());
@@ -176,6 +191,7 @@ const useDateTimePickerState = (initialStartTime) => {
       setIsTimePickerVisible(false);
 
       if (!selectedDate) return;
+      setHasTimeBeenReset(false);
       setStartTime((previousStartTime) => {
         const newStartTime = new Date(previousStartTime);
         newStartTime.setHours(selectedDate.getHours());
@@ -187,7 +203,7 @@ const useDateTimePickerState = (initialStartTime) => {
   };
 };
 
-const FormButton = ({ onPress, iconName, style, text }) => {
+const FormButton = ({ onPress, iconName, style, text, disabled }) => {
   return (
     <ShadowButton
       style={[
@@ -201,6 +217,7 @@ const FormButton = ({ onPress, iconName, style, text }) => {
         },
         style,
       ]}
+      disabled={disabled}
       onPress={onPress}
     >
       <Icon
