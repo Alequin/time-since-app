@@ -4,6 +4,7 @@ import { Button } from "./button";
 import { getTimeSince } from "./get-time-since";
 import { Icon } from "./icons";
 import { commonStyles } from "./common-styles";
+import { wildBlueYonder } from "./colours";
 
 export const TimeItem = ({
   item,
@@ -31,7 +32,7 @@ export const TimeItem = ({
       testID="time-item"
       style={[
         {
-          backgroundColor: "#909CC2",
+          backgroundColor: wildBlueYonder,
           width: "100%",
           height: 120,
           borderRadius: 20,

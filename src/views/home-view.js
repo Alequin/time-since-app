@@ -1,8 +1,7 @@
 import React from "react";
 import { View } from "react-native";
-import { Button } from "../button";
+import { ShadowButton } from "../button";
 import { Icon } from "../icons";
-import { commonStyles } from "../common-styles";
 import { TimeItem } from "../time-item";
 
 export const HomeView = ({
@@ -35,7 +34,7 @@ export const HomeView = ({
 
 const AddButton = ({ onPress }) => {
   return (
-    <Button
+    <ShadowButton
       onPress={onPress}
       style={[
         {
@@ -46,10 +45,9 @@ const AddButton = ({ onPress }) => {
           height: 75,
           borderRadius: 1000,
         },
-        commonStyles.shadow,
       ]}
     >
       <Icon name="plus" size={40} />
-    </Button>
+    </ShadowButton>
   );
 };

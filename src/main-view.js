@@ -52,7 +52,7 @@ export const MainView = () => {
         <TimeItemFormView
           testID="update-time-item-view"
           currentTime={currentTime}
-          initialTimeItem={itemToUpdate}
+          timeItemToEdit={itemToUpdate}
           onSubmit={(item) => {
             updateTimeItem(item);
             toHomeView();

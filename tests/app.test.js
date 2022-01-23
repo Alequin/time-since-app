@@ -20,7 +20,6 @@ import {
   enableAllErrorLogs,
   getButtonByChildTestId,
   getButtonByText,
-  setSecondsToZero,
   silenceAllErrorLogs,
 } from "./test-utils";
 import { newDateShiftedBy } from "./new-date-shifted-by";
@@ -29,9 +28,7 @@ import { expectTimeItemContents } from "./custom-expects/expect-time-item";
 describe("App", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    useCurrentTime.useCurrentTime.mockImplementation(() =>
-      setSecondsToZero(new Date())
-    );
+    useCurrentTime.useCurrentTime.mockImplementation(() => new Date());
     jest
       .spyOn(asyncStorage.timeItemsRepository, "save")
       .mockImplementation(async () => {});
@@ -184,12 +181,6 @@ describe("App", () => {
     });
 
     it("adds a new time item with with the provided title if the user updates the title", async () => {
-      let capturedDatePickerOnChange = null;
-      DateTimePicker.mockImplementation(({ testID, onChange }) => {
-        if (testID === "date-picker") capturedDatePickerOnChange = onChange;
-        return null;
-      });
-
       const screen = await asyncRender(<App />);
 
       // Start on the home view with no time items
@@ -295,7 +286,7 @@ describe("App", () => {
       await act(async () =>
         capturedTimePickerOnChange({
           nativeEvent: {
-            timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -5 })),
+            timestamp: newDateShiftedBy({ minutes: -5 }),
           },
         })
       );
@@ -501,7 +492,7 @@ describe("App", () => {
       });
     });
 
-    it.only("edits a time item if the user presses the edit button, updates the time and submits", async () => {
+    it("edits a time item if the user presses the edit button, updates the time and submits", async () => {
       let capturedTimePickerOnChange = null;
       DateTimePicker.mockImplementation(({ testID, onChange }) => {
         if (testID === "time-picker") capturedTimePickerOnChange = onChange;
@@ -539,7 +530,10 @@ describe("App", () => {
       await act(async () =>
         capturedTimePickerOnChange({
           nativeEvent: {
-            timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -10 })),
+            timestamp: newDateShiftedBy({
+              minutes: -10,
+              seconds: -30, // offset to stop flakyness due to seconds
+            }),
           },
         })
       );
@@ -705,7 +699,7 @@ describe("App", () => {
       await act(async () =>
         capturedTimePickerOnChange({
           nativeEvent: {
-            timestamp: setSecondsToZero(newDateShiftedBy({ minutes: -10 })),
+            timestamp: newDateShiftedBy({ minutes: -10 }),
           },
         })
       );

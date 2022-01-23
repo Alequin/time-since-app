@@ -1,5 +1,6 @@
 import Entypo from "@expo/vector-icons/Entypo";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import camelCase from "lodash/camelCase";
 import React from "react";
 import { View } from "react-native";
@@ -36,6 +37,10 @@ const ICON_OPTIONS = {
   plus: customIcon(Entypo, "plus"),
   trashBin: customIcon(Ionicons, "trash-bin"),
   edit: customIcon(Entypo, "edit"),
+  calendar: customIcon(Ionicons, "calendar-sharp"),
+  time: customIcon(Ionicons, "time-outline"),
+  back: customIcon(Ionicons, "arrow-back"),
+  undo: customIcon(FontAwesome, "undo"),
 };
 
 const TestIdElement = (props) => <View {...props} />;

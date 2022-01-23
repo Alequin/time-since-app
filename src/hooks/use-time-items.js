@@ -1,5 +1,4 @@
 import isEmpty from "lodash/isEmpty";
-import uniqueId from "lodash/uniqueId";
 import { useCallback, useEffect, useState } from "react";
 import { timeItemsRepository } from "../async-storage";
 import { newTimeItem, updateTimeItem } from "../time-item-utils";
