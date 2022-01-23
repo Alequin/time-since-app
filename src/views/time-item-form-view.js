@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BackHandler, Text, TextInput, View } from "react-native";
-import { Button, ShadowButton } from "../button";
+import { ShadowButton } from "../button";
 import { wildBlueYonder } from "../colours";
+import { dateToDisplayFormat } from "../date-to-dispay-format";
 import { Icon } from "../icons";
 import { TimeItem } from "../time-item";
 import { newDefaultTimeItem, updateTimeItem } from "../time-item-utils";
@@ -61,7 +62,6 @@ export const TimeItemFormView = ({
       style={{ flex: 1, width: "100%", alignItems: "center" }}
     >
       <TimeItem item={timeItem} currentTime={currentTime} />
-
       <View
         style={{
           width: "100%",
@@ -69,26 +69,8 @@ export const TimeItemFormView = ({
           padding: 5,
         }}
       >
-        <TextInput
-          style={{
-            height: 40,
-            width: "100%",
-            backgroundColor: "white",
-            textAlign: "center",
-          }}
-          placeholder="Title"
-          value={title}
-          onChangeText={(title) => setTitle(title)}
-        />
-        <Text>
-          Start Time:{" "}
-          {startTime.toLocaleDateString("en-gb", {
-            weekday: "long",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
-        </Text>
+        <TitleInput value={title} onChange={(title) => setTitle(title)} />
+        <StartTimeDisplay startTime={startTime} />
       </View>
       <FormButtons
         onPressChangeDate={showDatePicker}
@@ -164,6 +146,41 @@ const useDateTimePickerState = (initialStartTime) => {
   };
 };
 
+const TitleInput = ({ value, onChange }) => {
+  return (
+    <TextInput
+      style={{
+        height: 40,
+        width: "100%",
+        backgroundColor: "white",
+        textAlign: "center",
+        marginBottom: 10,
+      }}
+      placeholder="Title"
+      value={value}
+      onChangeText={onChange}
+    />
+  );
+};
+
+const StartTimeDisplay = ({ startTime }) => {
+  return (
+    <View
+      style={{
+        backgroundColor: wildBlueYonder,
+        width: "100%",
+        padding: 10,
+        borderRadius: 10,
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontWeight: "bold" }}>
+        Start Time: {useMemo(() => dateToDisplayFormat(startTime), [startTime])}
+      </Text>
+    </View>
+  );
+};
+
 const FormButtons = ({
   onPressChangeDate,
   onPressChangeTime,
@@ -207,7 +224,7 @@ const FormButtons = ({
             iconName="undo"
             text="Reset"
           />
-          <FormButton onPress={onSubmit} iconName="time" text="Submit" />
+          <FormButton onPress={onSubmit} iconName="check" text="Submit" />
         </View>
       </View>
       <FormButton
@@ -253,5 +270,3 @@ const FormButton = ({ onPress, iconName, style, text, disabled }) => {
     </ShadowButton>
   );
 };
-
-const formatDate = (date) => {};

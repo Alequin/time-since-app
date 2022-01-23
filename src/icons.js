@@ -41,6 +41,7 @@ const ICON_OPTIONS = {
   time: customIcon(Ionicons, "time-outline"),
   back: customIcon(Ionicons, "arrow-back"),
   undo: customIcon(FontAwesome, "undo"),
+  check: customIcon(Entypo, "check"),
 };
 
 const TestIdElement = (props) => <View {...props} />;
